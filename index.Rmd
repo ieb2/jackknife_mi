@@ -34,17 +34,78 @@ coverage_df <- results %>%
             "Bootstrap" = sum(boot_coverage)/1E2) %>%
   rename("Proportion of Missingness" = prop_missing)
 
-  
-coverage_df
-
-results %>%
+width_df<- results %>%
   select(rubin_width, jackknife_width, boot_width, prop_missing) %>%
   group_by(prop_missing) %>%
   summarise("Rubin's Rules" = mean(rubin_width), 
             "Jackknife" = mean(jackknife_width), 
             "Bootstrap" = mean(boot_width))
 
-results[results$prop_missing == 10,]$boot_width == results[results$prop_missing == 50,]$boot_width
+# Combined Plot 
+labels <- c("10" = "10% Missing", "30" = "30% Missing", "50" = "50% Missing")
+
+reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "point_estimate_boot", "prop_missing")], id.vars = "prop_missing") %>%
+  ggplot(data = .,
+         aes(x = value - 2, fill = variable, color = variable)) + 
+  geom_density(aes(y = ..density..), alpha = 0.25) + 
+  facet_grid(. ~ prop_missing, labeller = labeller(prop_missing = labels)) + 
+  theme(axis.title.y = element_blank(), 
+        panel.spacing=unit(1.5,"lines")) + 
+  theme_bw() + 
+  theme(axis.title.y = element_blank(), 
+        panel.spacing=unit(1.5,"lines"), 
+        strip.text = element_text(
+          size = 9)) + 
+  labs(
+    x = latex2exp::TeX("$\\widehat{\\beta_1} - \\beta_1")
+  ) + 
+  scale_fill_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) + 
+  scale_color_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap"))
+
+# Experimental Plot 
+# We can convert the boxplot to a histogram (like the picture you sent). 
+reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "point_estimate_boot", "prop_missing")], id.vars = "prop_missing") %>%
+  ggplot(., 
+         aes(x = variable, fill = variable, color = variable, y = value-2)) + 
+  ggdist::stat_halfeye(
+    alpha = 1,
+    adjust = .5, 
+    width = .6, 
+    .width = 0, 
+    justification = -.3, 
+    point_colour = NA) + 
+  geom_point(
+    size = 0.01,
+    alpha = 0.05,
+    position = position_jitter(
+      seed = 1, width = .1
+    )
+  ) + 
+  geom_boxplot(
+    fill = "transparent", 
+    color="black",
+    width = .25, 
+    outlier.shape = NA, 
+    show.legend=FALSE
+  ) +
+  coord_cartesian(ylim = c(-1.7, 1.7), clip = "on") + 
+  theme(axis.title.x = element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.x = element_blank(), 
+        panel.spacing=unit(1.5,"lines")) + 
+  theme_bw() + 
+  theme(axis.title.x = element_blank(), 
+        axis.ticks.x=element_blank(), 
+        axis.text.x = element_blank(), 
+        panel.spacing=unit(1.5,"lines"), 
+        strip.text = element_text(
+          size = 9)) + 
+  labs(
+    y = latex2exp::TeX("$\\widehat{\\beta_1} - \\beta_1")
+  ) + 
+  scale_fill_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) + 
+  scale_color_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) + 
+  geom_hline(yintercept = 0, linetype="dashed", color = "red") 
 ```
 
 # Background
