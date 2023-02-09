@@ -5,9 +5,10 @@ author:
   - Samantha R. Seals, University of West Florida
 date: "`r Sys.Date()`"
 output: html_document
+bibliography: references.bib  
 ---
 
-```{r, include=FALSE, warning=FALSE, echo=FALSE}
+```{r, warning=FALSE, echo=FALSE}
 # Data management
 
 library(tidyverse)
@@ -67,6 +68,7 @@ reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "poin
 reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "point_estimate_boot", "prop_missing")], id.vars = "prop_missing") %>%
   ggplot(., 
          aes(x = variable, fill = variable, color = variable, y = value-2)) + 
+  facet_grid(. ~ prop_missing, labeller = labeller(prop_missing = labels)) + 
   ggdist::stat_halfeye(
     alpha = 1,
     adjust = .5, 
