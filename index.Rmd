@@ -7,6 +7,46 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
+```{r, include=FALSE, warning=FALSE, echo=FALSE}
+# Data management
+
+library(tidyverse)
+
+results <- 
+  read_rds("combined_results_final.rds")
+
+# Find Duplicate Column Names
+duplicated_names <- duplicated(colnames(results))
+
+# Remove Duplicate Column Names
+results <- results[!duplicated_names]
+
+coverage_df <- results %>%
+  select(LB_rub, UB_rub, UB, LB, LB_boot, UB_boot, true_var, prop_missing) %>%
+  mutate(rubin_coverage = case_when(true_var > LB_rub & true_var < UB_rub ~ TRUE), 
+         jackknife_coverage = case_when(true_var > LB & true_var < UB ~ TRUE), 
+         boot_coverage = case_when(true_var > LB_boot & true_var < UB_boot ~ TRUE)) %>%
+  replace(is.na(.), FALSE) %>%
+  select(rubin_coverage, jackknife_coverage, boot_coverage, prop_missing) %>%
+  group_by(prop_missing) %>%
+  summarise("Rubin's Rules" = sum(rubin_coverage)/1E2, 
+            "Jackknife" = sum(jackknife_coverage)/1E2, 
+            "Bootstrap" = sum(boot_coverage)/1E2) %>%
+  rename("Proportion of Missingness" = prop_missing)
+
+  
+coverage_df
+
+results %>%
+  select(rubin_width, jackknife_width, boot_width, prop_missing) %>%
+  group_by(prop_missing) %>%
+  summarise("Rubin's Rules" = mean(rubin_width), 
+            "Jackknife" = mean(jackknife_width), 
+            "Bootstrap" = mean(boot_width))
+
+results[results$prop_missing == 10,]$boot_width == results[results$prop_missing == 50,]$boot_width
+```
+
 # Background
 
 Missing data is a discipline-agnostic issue commonly encountered by statistical practitioners. Given that many statistical procedures require data to be complete (i.e., in the form of an $n \times m$ matrix), the appropriate course of action to be taken in the presence of missing data has long been investigated by statisticians. Today, multiple imputation is accepted as the gold standard in missing data analysis, thanks to the work of Donald Rubin [@buuren_flexible_2012]. In 1977, Rubin proposed using multiple completed versions of the dataset with missing observations, applying the complete-data procedure of interest, and pooling the estimates to draw valid inferences [@buuren_flexible_2012]. The main advantage of multiple imputation, as opposed to single imputation, which had been used by researchers since the early 1970s, is its ability to properly estimate the variance caused by missing observations [@buuren_flexible_2012]. The emphasis placed on variance and uncertainty by Rubin was a departure from the status quo of the time, which was to fill in the missing observation with the most probable value and to proceed with complete case analyses as if the observation had not been missing, to begin with [@buuren_flexible_2012]. This approach, however, fails to incorporate the loss of information caused by missing observations into the estimation of parameters, resulting in the underestimation of variance [@rubin1978multiple].
