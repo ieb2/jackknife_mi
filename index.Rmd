@@ -8,7 +8,7 @@ output: html_document
 bibliography: references.bib  
 ---
 
-```{r, warning=FALSE, echo=FALSE}
+```{r, warning=FALSE, fig.align="center", echo = FALSE,fig.width = 14}
 # Data management
 
 library(tidyverse)
