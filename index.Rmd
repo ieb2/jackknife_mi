@@ -6,6 +6,7 @@ author:
 date: "`r Sys.Date()`"
 output: html_document
 ---
+# TEST
 # Background
 
 Missing data is a discipline-agnostic issue commonly encountered by statistical practitioners. Given that many statistical procedures require data to be complete (i.e., in the form of an $n \times m$ matrix), the appropriate course of action to be taken in the presence of missing data has long been investigated by statisticians. Today, multiple imputation is accepted as the gold standard in missing data analysis, thanks to the work of Donald Rubin [@buuren_flexible_2012]. In 1977, Rubin proposed using multiple completed versions of the dataset with missing observations, applying the complete-data procedure of interest, and pooling the estimates to draw valid inferences [@buuren_flexible_2012]. The main advantage of multiple imputation, as opposed to single imputation, which had been used by researchers since the early 1970s, is its ability to properly estimate the variance caused by missing observations [@buuren_flexible_2012]. The emphasis placed on variance and uncertainty by Rubin was a departure from the status quo of the time, which was to fill in the missing observation with the most probable value and to proceed with complete case analyses as if the observation had not been missing, to begin with [@buuren_flexible_2012]. This approach, however, fails to incorporate the loss of information caused by missing observations into the estimation of parameters, resulting in the underestimation of variance [@rubin1978multiple].
