@@ -112,6 +112,49 @@ reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "poin
   scale_color_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) + 
   geom_hline(yintercept = 0, linetype="dashed", color = "red") 
 
+reshape2::melt(results[c("jackknife_width", "boot_width", "rubin_width", "prop_missing")], id.vars = "prop_missing") %>%
+  ggplot(., 
+         aes(x = variable, fill = variable, color = variable, y = value)) + 
+  facet_grid(. ~ prop_missing, labeller = labeller(prop_missing = labels)) +
+  coord_cartesian(ylim = c(0, 6), clip = "on") + 
+  ggdist::stat_halfeye(
+    alpha = 1,
+    adjust = .5, 
+    width = .6, 
+    .width = 0, 
+    justification = -.3, 
+    point_colour = NA) + 
+  geom_point(
+    size = 0.01,
+    alpha = 0.05,
+    position = position_jitter(
+      seed = 1, width = .1
+    )
+  ) + 
+  geom_boxplot(
+    fill = "transparent", 
+    color="black",
+    width = .25, 
+    outlier.shape = NA, 
+    show.legend=FALSE
+  ) +
+  theme(axis.title.x = element_blank(),
+        axis.ticks.x =element_blank(),
+        axis.text.x = element_blank(), 
+        panel.spacing=unit(1.5,"lines")) + 
+  theme_bw() + 
+  theme(axis.title.x = element_blank(), 
+        axis.ticks.x = element_blank(), 
+        axis.text.x = element_blank(), 
+        panel.spacing=unit(1.5,"lines"), 
+        strip.text = element_text(
+          size = 9)) + 
+  labs(
+    y = "CI Width"
+  ) + 
+  scale_fill_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) + 
+  scale_color_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) 
+
 benchmark_summary <- read.csv("benchmark_res.csv") %>%
   select(-X) %>%
   mutate(method = as.factor(expr)) %>%
@@ -336,6 +379,15 @@ All analyses were conducted using R 4.2.2 (Innocent and Trusting).
 
 # Results 
 Per the Methods section, the performance of the proposed jackknife estimator was compared to two leading methods in the literature, Rubin's rules following multiple imputation and Bootstrap resampling prior to multiple imputation. The methods were compared concerning the coverage probabilities they generated, the widths of their respective confidence intervals, their computational expense, and the bias of their point estimators.
+
+## Point Estimation 
+
+At lower levels of missingness, the point estimation performance of the methods examined is comparable, with nearly unbiased estimates across the board. As the proportion of missingness increases, however, negative biases are noted, particularly for Rubin's approach. In contrast, it is noted that the jackknife approach continues to provide nearly unbiased estimates, even at high proportions of missingness, where the two other methods have begun to fail. Given the asymptotic nature of bootstrap resampling, it is reasonable to see failures arise as more and more data is lost to missingness. The foregoing idea likely accounts for the slight decrease in performance experienced by the bootstrap approach as the proportion of missingness changes from 10% to 30% and the much more significant deterioration in performance transitioning from 30% to 50%. The later transition likely causes the bootstrapped samples to become less representative of the population, causing biased point estimates. It is interesting to note that, despite its tremendous computational cost, the bootstrap method provides only slightly better point estimates compared to Rubin's rules at 50% missingness at comparable variability. 
+
+## Confidence Intervals
+
+## Computational Expense
+
 
 # Discussion 
 
