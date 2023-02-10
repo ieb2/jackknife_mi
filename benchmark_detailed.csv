@@ -1,0 +1,301 @@
+"","expr","time"
+"1","Jackknife",833724976
+"2","Jackknife",845855811
+"3","Jackknife",1171417921
+"4","Jackknife",858166014
+"5","Jackknife",868259097
+"6","Bootstrap",7286000492
+"7","Bootstrap",7255208828
+"8","Rubin's Rules",322326679
+"9","Jackknife",853347970
+"10","Jackknife",865815655
+"11","Bootstrap",7514394792
+"12","Bootstrap",7662362420
+"13","Jackknife",880534953
+"14","Rubin's Rules",325270183
+"15","Rubin's Rules",336710499
+"16","Bootstrap",7709605391
+"17","Jackknife",912063427
+"18","Bootstrap",7342340406
+"19","Bootstrap",7217478526
+"20","Bootstrap",7196018273
+"21","Bootstrap",7271111230
+"22","Jackknife",861374789
+"23","Jackknife",1174311982
+"24","Bootstrap",7160220664
+"25","Rubin's Rules",323237768
+"26","Bootstrap",7177450545
+"27","Bootstrap",7386341180
+"28","Jackknife",854214564
+"29","Rubin's Rules",311001469
+"30","Jackknife",857435722
+"31","Rubin's Rules",339718516
+"32","Jackknife",856943212
+"33","Bootstrap",7152678402
+"34","Jackknife",872214871
+"35","Rubin's Rules",307076553
+"36","Bootstrap",7158469855
+"37","Rubin's Rules",310927809
+"38","Bootstrap",7243502957
+"39","Bootstrap",7283416104
+"40","Bootstrap",7232036767
+"41","Jackknife",860875484
+"42","Jackknife",865784982
+"43","Rubin's Rules",310725381
+"44","Bootstrap",7177211643
+"45","Jackknife",858102445
+"46","Jackknife",1196019864
+"47","Bootstrap",7193971675
+"48","Rubin's Rules",318785591
+"49","Bootstrap",7144234952
+"50","Jackknife",864754060
+"51","Jackknife",850516568
+"52","Rubin's Rules",302815207
+"53","Jackknife",853874652
+"54","Jackknife",849853140
+"55","Jackknife",853470460
+"56","Bootstrap",7147131603
+"57","Jackknife",846822484
+"58","Bootstrap",7292578509
+"59","Bootstrap",7245918067
+"60","Rubin's Rules",325053253
+"61","Bootstrap",7198839659
+"62","Jackknife",886345255
+"63","Jackknife",867924612
+"64","Rubin's Rules",312957830
+"65","Rubin's Rules",305453293
+"66","Rubin's Rules",318630068
+"67","Rubin's Rules",307670685
+"68","Rubin's Rules",321099366
+"69","Bootstrap",7153664168
+"70","Bootstrap",7273115245
+"71","Rubin's Rules",319197157
+"72","Jackknife",855584044
+"73","Bootstrap",7480502657
+"74","Rubin's Rules",322072875
+"75","Jackknife",865417781
+"76","Bootstrap",7159553129
+"77","Bootstrap",7195974364
+"78","Bootstrap",7226378962
+"79","Rubin's Rules",314560603
+"80","Rubin's Rules",324652675
+"81","Bootstrap",7213534225
+"82","Jackknife",879594348
+"83","Bootstrap",7221210262
+"84","Bootstrap",7317128568
+"85","Jackknife",861887655
+"86","Rubin's Rules",324087030
+"87","Bootstrap",7286147614
+"88","Jackknife",880874430
+"89","Bootstrap",7424084156
+"90","Jackknife",889213411
+"91","Rubin's Rules",308516612
+"92","Bootstrap",7605709612
+"93","Rubin's Rules",309497445
+"94","Jackknife",870201548
+"95","Rubin's Rules",308186839
+"96","Jackknife",857627815
+"97","Rubin's Rules",306808735
+"98","Rubin's Rules",321055200
+"99","Jackknife",861312206
+"100","Bootstrap",7129562156
+"101","Rubin's Rules",308926127
+"102","Rubin's Rules",323057618
+"103","Bootstrap",7183468893
+"104","Jackknife",868189528
+"105","Rubin's Rules",309813353
+"106","Jackknife",867542414
+"107","Jackknife",861451025
+"108","Rubin's Rules",324491243
+"109","Bootstrap",7187344546
+"110","Jackknife",853646293
+"111","Jackknife",859045024
+"112","Rubin's Rules",307148869
+"113","Rubin's Rules",317905197
+"114","Rubin's Rules",311789015
+"115","Jackknife",866116883
+"116","Jackknife",851791681
+"117","Bootstrap",7194186211
+"118","Bootstrap",7196230356
+"119","Rubin's Rules",332301424
+"120","Rubin's Rules",311344035
+"121","Jackknife",887525367
+"122","Bootstrap",7145663183
+"123","Jackknife",873747156
+"124","Rubin's Rules",304201510
+"125","Bootstrap",7316624590
+"126","Jackknife",854532234
+"127","Bootstrap",7487708698
+"128","Rubin's Rules",302929628
+"129","Jackknife",850522757
+"130","Jackknife",857790074
+"131","Bootstrap",7082261579
+"132","Rubin's Rules",317144973
+"133","Bootstrap",7103449175
+"134","Rubin's Rules",318692634
+"135","Jackknife",863268834
+"136","Bootstrap",7202565181
+"137","Bootstrap",7178141315
+"138","Rubin's Rules",320754379
+"139","Bootstrap",7504877774
+"140","Bootstrap",7573258831
+"141","Bootstrap",7597609983
+"142","Rubin's Rules",334745471
+"143","Jackknife",888977037
+"144","Bootstrap",7577502192
+"145","Rubin's Rules",332583592
+"146","Bootstrap",7673873903
+"147","Jackknife",872726458
+"148","Rubin's Rules",317023533
+"149","Jackknife",872076960
+"150","Jackknife",1170903992
+"151","Jackknife",853211698
+"152","Bootstrap",7288159599
+"153","Bootstrap",7799345649
+"154","Bootstrap",7429893670
+"155","Bootstrap",7216299499
+"156","Jackknife",906428246
+"157","Rubin's Rules",348101940
+"158","Bootstrap",7509529350
+"159","Jackknife",917255707
+"160","Jackknife",873170495
+"161","Jackknife",892215898
+"162","Bootstrap",7288319584
+"163","Bootstrap",7250119283
+"164","Rubin's Rules",309186218
+"165","Jackknife",863002568
+"166","Bootstrap",7170126944
+"167","Bootstrap",7416130478
+"168","Bootstrap",7725845036
+"169","Rubin's Rules",306548782
+"170","Bootstrap",7141658929
+"171","Jackknife",859714919
+"172","Bootstrap",7348530752
+"173","Jackknife",863434130
+"174","Bootstrap",7230190223
+"175","Jackknife",853262482
+"176","Bootstrap",7170321526
+"177","Rubin's Rules",310944644
+"178","Rubin's Rules",322267851
+"179","Bootstrap",7252325374
+"180","Rubin's Rules",333025291
+"181","Bootstrap",7317702290
+"182","Rubin's Rules",324228512
+"183","Jackknife",881787466
+"184","Jackknife",856955385
+"185","Bootstrap",7195271872
+"186","Rubin's Rules",325122459
+"187","Bootstrap",7296919808
+"188","Bootstrap",7631066134
+"189","Bootstrap",7178847317
+"190","Jackknife",852513590
+"191","Rubin's Rules",323844304
+"192","Rubin's Rules",306523007
+"193","Rubin's Rules",315584745
+"194","Rubin's Rules",303763492
+"195","Bootstrap",7175925075
+"196","Jackknife",857323834
+"197","Bootstrap",7185364564
+"198","Bootstrap",7148566508
+"199","Rubin's Rules",320766044
+"200","Rubin's Rules",308194685
+"201","Bootstrap",7168747257
+"202","Bootstrap",7255181568
+"203","Bootstrap",7213942788
+"204","Bootstrap",7178887269
+"205","Bootstrap",7226517563
+"206","Bootstrap",7448922413
+"207","Jackknife",870541076
+"208","Rubin's Rules",305197149
+"209","Jackknife",844887212
+"210","Bootstrap",7154024988
+"211","Jackknife",850937438
+"212","Rubin's Rules",318316853
+"213","Rubin's Rules",308704471
+"214","Jackknife",866086147
+"215","Rubin's Rules",302923871
+"216","Jackknife",869743377
+"217","Jackknife",860080123
+"218","Rubin's Rules",318822283
+"219","Bootstrap",7208890613
+"220","Rubin's Rules",316989449
+"221","Jackknife",845891490
+"222","Rubin's Rules",322245468
+"223","Bootstrap",7174527767
+"224","Rubin's Rules",318216828
+"225","Bootstrap",7148421260
+"226","Rubin's Rules",315319115
+"227","Rubin's Rules",308672903
+"228","Jackknife",872862820
+"229","Jackknife",845900251
+"230","Jackknife",848111784
+"231","Rubin's Rules",321162325
+"232","Bootstrap",7190027198
+"233","Jackknife",874587902
+"234","Rubin's Rules",319926322
+"235","Bootstrap",7262360385
+"236","Jackknife",868776819
+"237","Jackknife",870705803
+"238","Rubin's Rules",322057750
+"239","Jackknife",913036507
+"240","Rubin's Rules",308992089
+"241","Rubin's Rules",322986279
+"242","Jackknife",865257355
+"243","Jackknife",870072898
+"244","Rubin's Rules",328338659
+"245","Rubin's Rules",310587766
+"246","Rubin's Rules",321174517
+"247","Jackknife",860358279
+"248","Rubin's Rules",329228914
+"249","Rubin's Rules",314321806
+"250","Jackknife",881623436
+"251","Bootstrap",7598756678
+"252","Rubin's Rules",318576396
+"253","Rubin's Rules",322363131
+"254","Rubin's Rules",322656404
+"255","Rubin's Rules",318433467
+"256","Jackknife",862078627
+"257","Bootstrap",7253402927
+"258","Jackknife",874559265
+"259","Jackknife",862933412
+"260","Rubin's Rules",311894844
+"261","Bootstrap",7325727832
+"262","Bootstrap",7448065070
+"263","Bootstrap",7319676549
+"264","Bootstrap",7362702107
+"265","Bootstrap",7314273617
+"266","Rubin's Rules",327571553
+"267","Rubin's Rules",315367185
+"268","Bootstrap",7268552961
+"269","Rubin's Rules",326745424
+"270","Bootstrap",7218736458
+"271","Rubin's Rules",320221999
+"272","Bootstrap",7522220255
+"273","Rubin's Rules",319524465
+"274","Rubin's Rules",307010158
+"275","Jackknife",871072932
+"276","Jackknife",866829461
+"277","Jackknife",859230281
+"278","Rubin's Rules",322355249
+"279","Rubin's Rules",319497408
+"280","Jackknife",847165676
+"281","Bootstrap",7370938213
+"282","Jackknife",897601725
+"283","Rubin's Rules",322528086
+"284","Rubin's Rules",331609959
+"285","Rubin's Rules",325816687
+"286","Jackknife",893524950
+"287","Jackknife",880996174
+"288","Rubin's Rules",318831010
+"289","Jackknife",882634644
+"290","Rubin's Rules",334062223
+"291","Rubin's Rules",315717941
+"292","Bootstrap",7587570277
+"293","Rubin's Rules",328266227
+"294","Rubin's Rules",334998046
+"295","Jackknife",881214756
+"296","Jackknife",890876070
+"297","Rubin's Rules",328530505
+"298","Jackknife",890229847
+"299","Jackknife",894764962
+"300","Jackknife",877754718

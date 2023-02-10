@@ -7,6 +7,8 @@ date: "`r Sys.Date()`"
 output: html_document
 bibliography: references.bib 
 theme: cerulean
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r, warning=FALSE, fig.align="center", echo = FALSE}
@@ -68,7 +70,7 @@ reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "poin
 # We can convert the boxplot to a histogram (like the picture you sent). 
 reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "point_estimate_boot", "prop_missing")], id.vars = "prop_missing") %>%
   ggplot(., 
-         aes(y = variable, fill = variable, color = variable, x = value-2)) + 
+         aes(x = variable, fill = variable, color = variable, y = value-2)) + 
   facet_grid(. ~ prop_missing, labeller = labeller(prop_missing = labels)) + 
   ggdist::stat_halfeye(
     alpha = 1,
@@ -91,15 +93,15 @@ reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "poin
     outlier.shape = NA, 
     show.legend=FALSE
   ) +
-  coord_cartesian(xlim = c(-1.7, 1.7), clip = "on") + 
-  theme(axis.title.y = element_blank(),
-        axis.ticks.y=element_blank(),
-        axis.text.y = element_blank(), 
+  coord_cartesian(ylim = c(-1.7, 1.7), clip = "on") + 
+  theme(axis.title.x = element_blank(),
+        axis.ticks.x =element_blank(),
+        axis.text.x = element_blank(), 
         panel.spacing=unit(1.5,"lines")) + 
   theme_bw() + 
-  theme(axis.title.y = element_blank(), 
-        axis.ticks.y = element_blank(), 
-        axis.text.y = element_blank(), 
+  theme(axis.title.x = element_blank(), 
+        axis.ticks.x = element_blank(), 
+        axis.text.x = element_blank(), 
         panel.spacing=unit(1.5,"lines"), 
         strip.text = element_text(
           size = 9)) + 
@@ -108,7 +110,92 @@ reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "poin
   ) + 
   scale_fill_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) + 
   scale_color_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) + 
-  geom_vline(xintercept = 0, linetype="dashed", color = "red") 
+  geom_hline(yintercept = 0, linetype="dashed", color = "red") 
+
+benchmark_summary <- read.csv("benchmark_res.csv") %>%
+  select(-X) %>%
+  mutate(method = as.factor(expr)) %>%
+  select(-expr)
+
+benchmark_detailed <- read.csv("benchmark_detailed.csv") %>%
+  select(-X) %>%
+  mutate(method = as.factor(expr), 
+         time = time/1e6) %>%
+  select(method, time) 
+
+ggplot(benchmark_detailed, 
+       aes(x = time, fill = method, color = method, y = method)) + 
+  ggdist::stat_halfeye(
+    alpha = 1,
+    adjust = .5, 
+    width = 1, 
+    .width = 0, 
+    justification = -.3, 
+    point_colour = NA) + 
+  geom_point(
+    size = 0.01,
+    alpha = 0.5,
+    position = position_jitter(
+      seed = 1, width = 0.1, height = 0.1
+    )
+  ) + 
+  geom_boxplot(
+    fill = "transparent", 
+    color="black",
+    width = .5, 
+    outlier.shape = NA, 
+    show.legend=FALSE
+  ) + 
+  theme_bw() + 
+  theme(axis.title.y = element_blank(), 
+        axis.ticks.y = element_blank(), 
+        axis.text.y = element_blank(), 
+        axis.ticks.x.top = element_blank(),
+        axis.text.x.top = element_blank(),
+        panel.spacing=unit(1.5,"lines"), 
+        strip.text = element_text(
+          size = 9)) + 
+  scale_fill_discrete(name = "Method", labels = c( "Bootstrap", "Jackknife","Rubin's Rules")) + 
+  scale_color_discrete(name = "Method", labels = c( "Bootstrap", "Jackknife","Rubin's Rules")) + labs(x = "Time (seconds)") + 
+  scale_x_log10()
+
+benchmark_detailed_releveled <- benchmark_detailed
+
+benchmark_detailed_releveled$method <- factor(benchmark_detailed_releveled$method, levels = c("Rubin's Rules", "Jackknife", "Bootstrap"))
+ggplot(benchmark_detailed_releveled, 
+       aes(x = time, fill = method, color = method, y = method)) + 
+  facet_wrap(.~method, scales = "free") + 
+  ggdist::stat_halfeye(
+    alpha = 1,
+    adjust = .5, 
+    width = 1, 
+    .width = 0, 
+    justification = -.3, 
+    point_colour = NA) + 
+  geom_point(
+    size = 0.01,
+    alpha = 0.5,
+    position = position_jitter(
+      seed = 1, width = 0.1, height = 0.1
+    )
+  ) + 
+  geom_boxplot(
+    fill = "transparent", 
+    color="black",
+    width = .5, 
+    outlier.shape = NA, 
+    show.legend=FALSE
+  ) + 
+  theme_bw() + 
+  theme(axis.title.y = element_blank(), 
+        axis.ticks.y = element_blank(), 
+        axis.text.y = element_blank(), 
+        axis.ticks.x.top = element_blank(),
+        axis.text.x.top = element_blank(),
+        legend.position = "none",
+        panel.spacing=unit(1.5,"lines"), 
+        strip.text = element_text(
+          size = 9)) + labs(x = "Time (seconds)")
 ```
 
 # Background
@@ -246,3 +333,57 @@ V_{\text{total}} &= V_W + V_B + \frac{V_B}{m} \\
 Thereafter, the methods examined were compared concerning their point estimates, confidence intervals, and computational expense. 
 
 All analyses were conducted using R 4.2.2 (Innocent and Trusting). 
+
+# Results 
+Per the Methods section, the performance of the proposed jackknife estimator was compared to two leading methods in the literature, Rubin's rules following multiple imputation and Bootstrap resampling prior to multiple imputation. The methods were compared concerning the coverage probabilities they generated, the widths of their respective confidence intervals, their computational expense, and the bias of their point estimators.
+
+# Discussion 
+
+# Appendix
+
+## Notation 
+  
+  * $N$ is the total number of units in the finite population being targeted.  
+  * $X$ is an $N \times q$ matrix of fully observed covariates.  
+  * $Y$ is an $N \times p$ matrix of partially observed outcome variables.  
+  * $R$ is an $N \times p$ matrix of response indicators (i.e., $R_{ij} = 1$ if the response on $Y_{ij}$ is obtained and $R_{ij} = 0$ otherwise.)  
+  * $Q$ is an unknown quantity of interest to the analyst. 
+  * $Z_c = \{X, Y_{inc}\}$ is the complete data. 
+  * $Z_o = \{X, Y_{obs}, R_{inc}\}$ is the incomplete (i.e., observed) data. 
+  * The analyst's complete-data procedure is summarized by $\mathscr{P}_{com} = [\hat{Q}(X, Y_{inc}), U(X, Y_{inc})]$,   where $\hat{Q}(X, Y_{inc})$ is an estimator of $Q$ with associated variance $U(X, Y_{inc}.)$ 
+  * $R$ is not a part of $\mathscr{P}_{com}$, as the missing at random assumption implies that the response behavior itself carries no information about $Q$. 
+
+## Formal Definition of Congeniality
+
+In short, one may define congeniality as the imputer and analyst making different assumptions regarding the data. The following two-part formal definition of uncongeniality was proposed by Meng in 1994, and will be utilized in our research. Meeting the assumptions set forth in the following two conditions qualifies the imputation model as being congenial to the analysis model, or vice versa. 
+
+### Condition I
+Let $E_f$ and $V_f$ denote posterior mean and variance with respect to $f$, respectively. A Bayesian model $f$ is said to be congenial to the analysis procedure $\mathscr{P} \equiv \{\mathscr{P}_{obs}; \mathscr{P}_{com}\}$ for given $Z_o$ if the following hold: 
+
+  * The posterior mean and variance of $\theta$ under $f$ given the incomplete data are asymptotically the same as the estimate and variance from the analyst's incomplete-data procedure $\mathscr{P}_{obs}$, that is, 
+    \begin{equation}
+        [\hat{\theta}(Z_o), U(Z_o)] \simeq [E_f[\theta | Z_o], V_f[\theta | Z_o]]
+    \end{equation}
+    
+  * The posterior mean and variance of $\theta$ under $f$ given the complete data are asymptotically the same as the estimate and variance from the analyst's complete-data procedure $\mathscr{P}_{com}$, that is, 
+    \begin{equation}
+         [\hat{\theta}(Z_c), U(Z_c)] \simeq [E_f[\theta | Z_c], V_f[\theta | Z_c]]
+    \end{equation}
+    
+    for any possible $Y_{inc} = (Y_{obs}, Y_{miss})$ with $Y_{obs}$ conditioned upon.
+
+If the foregoing conditions are met, $f$ is said to be second-moment congenial to $\mathscr{P}$.
+
+### Condition II 
+
+The analysis procedure $\mathscr{P}$ is said to be congenial to the imputation model $g(Y_{miss}|Z_o, A)$ where $A$ represents possible additional data the imputer has access to, if one can find an $f$ such that (**i**) $f$ is congenial to $\mathscr{P}$ and (**ii**) the posterior predictive density for $Y_{miss}$ derived under $f$ is identical to the imputation model $f(Y_{miss}|Z_o) = g(Y_{miss}|Z_o, A) \ \forall \ Y_{miss}$.
+
+## Mechanisms of Missingness
+
+The underlying mechanism of missingness can be classified as missing completely at random (MCAR), missing at random (MAR), or missing not at random (MNAR). In instances where the probability of missingness is independent of all observed variables, data are said to be MCAR. Conversely, in instances where the probability of missingness is directly related to the measurement itself, data are said to be MNAR. Finally, data are said to be MAR when the probability of missingness is independent of the measure itself but dependent on some other observed variable.
+
+Of the three categories, the most desirable is MCAR, as case-wise deletion does not introduce any biases to the analysis procedure. However, MCAR is considered a highly optimistic assumption that rarely holds in practice. As such, a much more reasonable assumption is the MAR assumption, which assumes that the observed values can completely model the probability of missingness. At this point, it is worth noting that missingness mechanisms describe a continuum rather than strict categories. It could be argued that even the MAR assumption is one that rarely holds in practice and that all missing data are MNAR; however, there are instances where the observed values contain sufficient information to model the probability of missingness. In such cases, a proper imputation model that utilizes auxiliary variables, domain expertise, and observed values can make the mechanism of missingness more MAR than MNAR. 
+
+## Code 
+
+Please see our publicly available GitHub [repository](https://github.com/ieb2/jackknife_var_est.git) for the R code associated with the simulation, data manipulation, and visualization.
