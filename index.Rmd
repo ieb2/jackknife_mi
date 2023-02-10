@@ -4,46 +4,66 @@ author:
   - Ihsan E. Buker, University of West Florida
   - Samantha R. Seals, University of West Florida
 date: "`r Sys.Date()`"
-output: html_document
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: flatly
 bibliography: references.bib 
-theme: cerulean
 editor_options: 
   chunk_output_type: console
+nocite: |
+  @Wang_1998
+biblio-style: "apalike"
+link_citations: true
 ---
 
-```{r, warning=FALSE, fig.align="center", echo = FALSE}
-# Data management
+```{r setup, include=FALSE, eval=TRUE}
+knitr::opts_chunk$set(warning=FALSE, fig.align="center", echo = FALSE, message = FALSE)
+```
 
+
+```{r}
+# Data management
 library(tidyverse)
+library(kableExtra)
+
+benchmark_detailed <- read.csv("benchmark_detailed.csv") %>%
+  select(-X) %>%
+  mutate(method = as.factor(expr), 
+         time = time/1e6) %>%
+  select(time, method) 
+
+clean_jackk_times <- benchmark_detailed %>%
+  filter(method == "Jackknife") %>%
+  mutate(zTime = scale(time)) %>%
+  filter(between(zTime, -2.5,2.5)) %>%
+  select(time, method)
+
+clean_boot_times <- benchmark_detailed %>%
+  filter(method == "Bootstrap") %>%
+  mutate(zTime = scale(time)) %>%
+  filter(between(zTime, -2.5,2.5)) %>%
+  select(time, method)
+
+clean_rubin_times <- benchmark_detailed %>%
+  filter(method == "Rubin's Rules") %>%
+  mutate(zTime = scale(time)) %>%
+  filter(between(zTime, -2.5,2.5)) %>%
+  select(time, method)
+
+
+benchmark_detailed_releveled <- rbind(clean_boot_times, clean_jackk_times, clean_rubin_times)
+
+benchmark_detailed_releveled$method <- factor(benchmark_detailed_releveled$method, levels = c("Rubin's Rules", "Jackknife", "Bootstrap"))
+
 
 results <- 
   read_rds("combined_results_final.rds")
 
-# Find Duplicate Column Names
 duplicated_names <- duplicated(colnames(results))
 
-# Remove Duplicate Column Names
 results <- results[!duplicated_names]
-
-coverage_df <- results %>%
-  select(LB_rub, UB_rub, UB, LB, LB_boot, UB_boot, true_var, prop_missing) %>%
-  mutate(rubin_coverage = case_when(true_var > LB_rub & true_var < UB_rub ~ TRUE), 
-         jackknife_coverage = case_when(true_var > LB & true_var < UB ~ TRUE), 
-         boot_coverage = case_when(true_var > LB_boot & true_var < UB_boot ~ TRUE)) %>%
-  replace(is.na(.), FALSE) %>%
-  select(rubin_coverage, jackknife_coverage, boot_coverage, prop_missing) %>%
-  group_by(prop_missing) %>%
-  summarise("Rubin's Rules" = sum(rubin_coverage)/1E2, 
-            "Jackknife" = sum(jackknife_coverage)/1E2, 
-            "Bootstrap" = sum(boot_coverage)/1E2) %>%
-  rename("Proportion of Missingness" = prop_missing)
-
-width_df<- results %>%
-  select(rubin_width, jackknife_width, boot_width, prop_missing) %>%
-  group_by(prop_missing) %>%
-  summarise("Rubin's Rules" = mean(rubin_width), 
-            "Jackknife" = mean(jackknife_width), 
-            "Bootstrap" = mean(boot_width))
 
 # Combined Plot 
 labels <- c("10" = "10% Missing", "30" = "30% Missing", "50" = "50% Missing")
@@ -66,179 +86,6 @@ reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "poin
   scale_fill_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) + 
   scale_color_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap"))
 
-# Experimental Plot 
-# We can convert the boxplot to a histogram (like the picture you sent). 
-reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "point_estimate_boot", "prop_missing")], id.vars = "prop_missing") %>%
-  ggplot(., 
-         aes(x = variable, fill = variable, color = variable, y = value-2)) + 
-  facet_grid(. ~ prop_missing, labeller = labeller(prop_missing = labels)) + 
-  ggdist::stat_halfeye(
-    alpha = 1,
-    adjust = .5, 
-    width = .6, 
-    .width = 0, 
-    justification = -.3, 
-    point_colour = NA) + 
-  geom_point(
-    size = 0.01,
-    alpha = 0.05,
-    position = position_jitter(
-      seed = 1, width = .1
-    )
-  ) + 
-  geom_boxplot(
-    fill = "transparent", 
-    color="black",
-    width = .25, 
-    outlier.shape = NA, 
-    show.legend=FALSE
-  ) +
-  coord_cartesian(ylim = c(-1.7, 1.7), clip = "on") + 
-  theme(axis.title.x = element_blank(),
-        axis.ticks.x =element_blank(),
-        axis.text.x = element_blank(), 
-        panel.spacing=unit(1.5,"lines")) + 
-  theme_bw() + 
-  theme(axis.title.x = element_blank(), 
-        axis.ticks.x = element_blank(), 
-        axis.text.x = element_blank(), 
-        panel.spacing=unit(1.5,"lines"), 
-        strip.text = element_text(
-          size = 9)) + 
-  labs(
-    y = latex2exp::TeX("$\\widehat{\\beta_1} - \\beta_1")
-  ) + 
-  scale_fill_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) + 
-  scale_color_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) + 
-  geom_hline(yintercept = 0, linetype="dashed", color = "red") 
-
-reshape2::melt(results[c("jackknife_width", "boot_width", "rubin_width", "prop_missing")], id.vars = "prop_missing") %>%
-  ggplot(., 
-         aes(x = variable, fill = variable, color = variable, y = value)) + 
-  facet_grid(. ~ prop_missing, labeller = labeller(prop_missing = labels)) +
-  coord_cartesian(ylim = c(0, 6), clip = "on") + 
-  ggdist::stat_halfeye(
-    alpha = 1,
-    adjust = .5, 
-    width = .6, 
-    .width = 0, 
-    justification = -.3, 
-    point_colour = NA) + 
-  geom_point(
-    size = 0.01,
-    alpha = 0.05,
-    position = position_jitter(
-      seed = 1, width = .1
-    )
-  ) + 
-  geom_boxplot(
-    fill = "transparent", 
-    color="black",
-    width = .25, 
-    outlier.shape = NA, 
-    show.legend=FALSE
-  ) +
-  theme(axis.title.x = element_blank(),
-        axis.ticks.x =element_blank(),
-        axis.text.x = element_blank(), 
-        panel.spacing=unit(1.5,"lines")) + 
-  theme_bw() + 
-  theme(axis.title.x = element_blank(), 
-        axis.ticks.x = element_blank(), 
-        axis.text.x = element_blank(), 
-        panel.spacing=unit(1.5,"lines"), 
-        strip.text = element_text(
-          size = 9)) + 
-  labs(
-    y = "CI Width"
-  ) + 
-  scale_fill_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) + 
-  scale_color_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) 
-
-benchmark_summary <- read.csv("benchmark_res.csv") %>%
-  select(-X) %>%
-  mutate(method = as.factor(expr)) %>%
-  select(-expr)
-
-benchmark_detailed <- read.csv("benchmark_detailed.csv") %>%
-  select(-X) %>%
-  mutate(method = as.factor(expr), 
-         time = time/1e6) %>%
-  select(method, time) 
-
-ggplot(benchmark_detailed, 
-       aes(x = time, fill = method, color = method, y = method)) + 
-  ggdist::stat_halfeye(
-    alpha = 1,
-    adjust = .5, 
-    width = 1, 
-    .width = 0, 
-    justification = -.3, 
-    point_colour = NA) + 
-  geom_point(
-    size = 0.01,
-    alpha = 0.5,
-    position = position_jitter(
-      seed = 1, width = 0.1, height = 0.1
-    )
-  ) + 
-  geom_boxplot(
-    fill = "transparent", 
-    color="black",
-    width = .5, 
-    outlier.shape = NA, 
-    show.legend=FALSE
-  ) + 
-  theme_bw() + 
-  theme(axis.title.y = element_blank(), 
-        axis.ticks.y = element_blank(), 
-        axis.text.y = element_blank(), 
-        axis.ticks.x.top = element_blank(),
-        axis.text.x.top = element_blank(),
-        panel.spacing=unit(1.5,"lines"), 
-        strip.text = element_text(
-          size = 9)) + 
-  scale_fill_discrete(name = "Method", labels = c( "Bootstrap", "Jackknife","Rubin's Rules")) + 
-  scale_color_discrete(name = "Method", labels = c( "Bootstrap", "Jackknife","Rubin's Rules")) + labs(x = "Time (seconds)") + 
-  scale_x_log10()
-
-benchmark_detailed_releveled <- benchmark_detailed
-
-benchmark_detailed_releveled$method <- factor(benchmark_detailed_releveled$method, levels = c("Rubin's Rules", "Jackknife", "Bootstrap"))
-ggplot(benchmark_detailed_releveled, 
-       aes(x = time, fill = method, color = method, y = method)) + 
-  facet_wrap(.~method, scales = "free") + 
-  ggdist::stat_halfeye(
-    alpha = 1,
-    adjust = .5, 
-    width = 1, 
-    .width = 0, 
-    justification = -.3, 
-    point_colour = NA) + 
-  geom_point(
-    size = 0.01,
-    alpha = 0.5,
-    position = position_jitter(
-      seed = 1, width = 0.1, height = 0.1
-    )
-  ) + 
-  geom_boxplot(
-    fill = "transparent", 
-    color="black",
-    width = .5, 
-    outlier.shape = NA, 
-    show.legend=FALSE
-  ) + 
-  theme_bw() + 
-  theme(axis.title.y = element_blank(), 
-        axis.ticks.y = element_blank(), 
-        axis.text.y = element_blank(), 
-        axis.ticks.x.top = element_blank(),
-        axis.text.x.top = element_blank(),
-        legend.position = "none",
-        panel.spacing=unit(1.5,"lines"), 
-        strip.text = element_text(
-          size = 9)) + labs(x = "Time (seconds)")
 ```
 
 # Background
@@ -371,7 +218,7 @@ V_{\text{total}} &= V_W + V_B + \frac{V_B}{m} \\
 \bar{\theta} &\pm t_{df,1-\alpha/2} * \sqrt{V_{\text{total}}} 
 \end{align}
 
-  * **Jackknife then multiply impute:** Although a more detailed overview of the proposed jackknife estimator is provided in @sec-est, briefly, the observed dataset was jackknifed to obtain $j = 200$ samples, each of which were imputed $m = 2$ times, with a maximum of $maxit = 5$ iterations. The mean of the jackknife estimates served as the final point estimate, and a 95% confidence interval was generated through the percentile method, where the $\alpha/2^{th}$ and $1-(\alpha/2)^{th}$ percentiles were the lower and upper bounds, respectively. 
+  * **Jackknife then multiply impute:** Although a more detailed overview of the proposed jackknife estimator is provided in the appendix, briefly, the observed dataset was jackknifed to obtain $j = 200$ samples, each of which were imputed $m = 2$ times, with a maximum of $maxit = 5$ iterations. The mean of the jackknife estimates served as the final point estimate, and a 95% confidence interval was generated through the percentile method, where the $\alpha/2^{th}$ and $1-(\alpha/2)^{th}$ percentiles were the lower and upper bounds, respectively. 
 
 Thereafter, the methods examined were compared concerning their point estimates, confidence intervals, and computational expense. 
 
@@ -382,11 +229,189 @@ Per the Methods section, the performance of the proposed jackknife estimator was
 
 ## Point Estimation 
 
+```{r}
+reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "point_estimate_boot", "prop_missing")], id.vars = "prop_missing") %>%
+  ggplot(., 
+         aes(x = variable, fill = variable, color = variable, y = value-2)) + 
+  facet_grid(. ~ prop_missing, labeller = labeller(prop_missing = labels)) + 
+  ggdist::stat_halfeye(
+    alpha = 1,
+    adjust = .5, 
+    width = .6, 
+    .width = 0, 
+    justification = -.3, 
+    point_colour = NA) + 
+  geom_point(
+    size = 0.01,
+    alpha = 0.05,
+    position = position_jitter(
+      seed = 1, width = .1
+    )
+  ) + 
+  geom_boxplot(
+    fill = "transparent", 
+    color="black",
+    width = .25, 
+    outlier.shape = NA, 
+    show.legend=FALSE
+  ) +
+  coord_cartesian(ylim = c(-1.7, 1.7), clip = "on") + 
+  theme(axis.title.x = element_blank(),
+        axis.ticks.x =element_blank(),
+        axis.text.x = element_blank(), 
+        panel.spacing=unit(1.5,"lines")) + 
+  theme_bw() + 
+  theme(axis.title.x = element_blank(), 
+        axis.ticks.x = element_blank(), 
+        axis.text.x = element_blank(), 
+        panel.spacing=unit(1.5,"lines"), 
+        strip.text = element_text(
+          size = 9)) + 
+  labs(
+    y = latex2exp::TeX("$\\widehat{\\beta_1} - \\beta_1"), 
+    title = "Density Plots for Point Estimate Bias"
+  ) + 
+  scale_fill_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) + 
+  scale_color_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) + 
+  geom_hline(yintercept = 0, linetype="dashed", color = "red") 
+```
+
+
 At lower levels of missingness, the point estimation performance of the methods examined is comparable, with nearly unbiased estimates across the board. As the proportion of missingness increases, however, negative biases are noted, particularly for Rubin's approach. In contrast, it is noted that the jackknife approach continues to provide nearly unbiased estimates, even at high proportions of missingness, where the two other methods have begun to fail. Given the asymptotic nature of bootstrap resampling, it is reasonable to see failures arise as more and more data is lost to missingness. The foregoing idea likely accounts for the slight decrease in performance experienced by the bootstrap approach as the proportion of missingness changes from 10% to 30% and the much more significant deterioration in performance transitioning from 30% to 50%. The later transition likely causes the bootstrapped samples to become less representative of the population, causing biased point estimates. It is interesting to note that, despite its tremendous computational cost, the bootstrap method provides only slightly better point estimates compared to Rubin's rules at 50% missingness at comparable variability. 
 
 ## Confidence Intervals
 
+```{r}
+reshape2::melt(results[c("jackknife_width", "boot_width", "rubin_width", "prop_missing")], id.vars = "prop_missing") %>%
+  ggplot(., 
+         aes(x = variable, fill = variable, color = variable, y = value)) + 
+  facet_grid(. ~ prop_missing, labeller = labeller(prop_missing = labels)) +
+  coord_cartesian(ylim = c(0, 6), clip = "on") + 
+  ggdist::stat_halfeye(
+    alpha = 1,
+    adjust = .5, 
+    width = .6, 
+    .width = 0, 
+    justification = -.3, 
+    point_colour = NA) + 
+  geom_point(
+    size = 0.01,
+    alpha = 0.05,
+    position = position_jitter(
+      seed = 1, width = .1
+    )
+  ) + 
+  geom_boxplot(
+    fill = "transparent", 
+    color="black",
+    width = .25, 
+    outlier.shape = NA, 
+    show.legend=FALSE
+  ) +
+  theme(axis.title.x = element_blank(),
+        axis.ticks.x =element_blank(),
+        axis.text.x = element_blank(), 
+        panel.spacing=unit(1.5,"lines")) + 
+  theme_bw() + 
+  theme(axis.title.x = element_blank(), 
+        axis.ticks.x = element_blank(), 
+        axis.text.x = element_blank(), 
+        panel.spacing=unit(1.5,"lines"), 
+        strip.text = element_text(
+          size = 9)) + 
+  labs(
+    y = "CI Width",
+    title = "Density Plots for Confidence Interval Width"
+  ) + 
+  scale_fill_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) + 
+  scale_color_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) 
+```
+
+
+```{r}
+library(kableExtra)
+results %>%
+  select(LB_rub, UB_rub, UB, LB, LB_boot, UB_boot, true_var, prop_missing) %>%
+  mutate(rubin_coverage = case_when(true_var > LB_rub & true_var < UB_rub ~ TRUE), 
+         jackknife_coverage = case_when(true_var > LB & true_var < UB ~ TRUE), 
+         boot_coverage = case_when(true_var > LB_boot & true_var < UB_boot ~ TRUE)) %>%
+  replace(is.na(.), FALSE) %>%
+  select(rubin_coverage, jackknife_coverage, boot_coverage, prop_missing) %>%
+  group_by(prop_missing) %>%
+  summarise("Rubin's Rules" = sum(rubin_coverage)/1E2, 
+            "Jackknife" = sum(jackknife_coverage)/1E2, 
+            "Bootstrap" = sum(boot_coverage)/1E2) %>%
+  rename("Proportion of Missingness" = prop_missing) %>%
+  kbl(caption = "Coverage Probabilities Grouped by Proportion of Missingness (%)", align=c(rep('c',times=4))) %>%
+  kable_material(c("striped", "hover"))
+```
+
+```{r}
+results %>%
+  select(rubin_width, jackknife_width, boot_width, prop_missing) %>%
+  group_by(prop_missing) %>%
+  summarise("Rubin's Rules" = mean(rubin_width), 
+            "Jackknife" = mean(jackknife_width), 
+            "Bootstrap" = mean(boot_width)) %>%
+  rename("Proportion of Missingness" = prop_missing) %>%
+  kbl(caption = "Confidence Interval Width Grouped by Proportion of Missingness", 
+    align=c(rep('c',times=4)), digits=2) %>%
+  kable_material(c("striped", "hover"))
+```
+
 ## Computational Expense
+
+```{r}
+ggplot(benchmark_detailed_releveled, 
+       aes(x = time, fill = method, color = method, y = method)) + 
+  facet_wrap(.~method, scales = "free") + 
+  ggdist::stat_halfeye(
+    alpha = 1,
+    adjust = .5, 
+    width = 1, 
+    .width = 0, 
+    justification = -.3, 
+    point_colour = NA) + 
+  geom_point(
+    size = 0.01,
+    alpha = 0.5,
+    position = position_jitter(
+      seed = 1, width = 0.1, height = 0.1
+    )
+  ) + 
+  geom_boxplot(
+    fill = "transparent", 
+    color="black",
+    width = .5, 
+    outlier.shape = NA, 
+    show.legend=FALSE
+  ) + 
+  theme_bw() + 
+  theme(axis.title.y = element_blank(), 
+        axis.ticks.y = element_blank(), 
+        axis.text.y = element_blank(), 
+        axis.ticks.x.top = element_blank(),
+        axis.text.x.top = element_blank(),
+        legend.position = "none",
+        panel.spacing=unit(1.5,"lines"), 
+        strip.text = element_text(
+          size = 9)) + labs(x = "Time (seconds)", title = "Density Plots for Computational Time") + 
+  scale_x_sqrt() 
+```
+
+
+```{r}
+benchmark_detailed_releveled %>%
+  group_by(method) %>%
+  summarise("Mean" = mean(time), 
+            "SD" = sd(time), 
+            "Range" = {max(time) - min(time)}
+            ) %>%
+  rename("Method" = method) %>%
+  kbl(caption = "Summary Statistics for Computational Time (seconds)", 
+    align=c(rep('c',times=3)), digits=2) %>%
+  kable_material(c("striped", "hover"))
+```
 
 
 # Discussion 
