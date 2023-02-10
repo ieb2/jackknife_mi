@@ -5,10 +5,11 @@ author:
   - Samantha R. Seals, University of West Florida
 date: "`r Sys.Date()`"
 output: html_document
-bibliography: references.bib  
+bibliography: references.bib 
+theme: cerulean
 ---
 
-```{r, warning=FALSE, fig.align="center", echo = FALSE,fig.width = 14}
+```{r, warning=FALSE, fig.align="center", echo = FALSE}
 # Data management
 
 library(tidyverse)
@@ -67,7 +68,7 @@ reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "poin
 # We can convert the boxplot to a histogram (like the picture you sent). 
 reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "point_estimate_boot", "prop_missing")], id.vars = "prop_missing") %>%
   ggplot(., 
-         aes(x = variable, fill = variable, color = variable, y = value-2)) + 
+         aes(y = variable, fill = variable, color = variable, x = value-2)) + 
   facet_grid(. ~ prop_missing, labeller = labeller(prop_missing = labels)) + 
   ggdist::stat_halfeye(
     alpha = 1,
@@ -90,15 +91,15 @@ reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "poin
     outlier.shape = NA, 
     show.legend=FALSE
   ) +
-  coord_cartesian(ylim = c(-1.7, 1.7), clip = "on") + 
-  theme(axis.title.x = element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.text.x = element_blank(), 
+  coord_cartesian(xlim = c(-1.7, 1.7), clip = "on") + 
+  theme(axis.title.y = element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.text.y = element_blank(), 
         panel.spacing=unit(1.5,"lines")) + 
   theme_bw() + 
-  theme(axis.title.x = element_blank(), 
-        axis.ticks.x=element_blank(), 
-        axis.text.x = element_blank(), 
+  theme(axis.title.y = element_blank(), 
+        axis.ticks.y = element_blank(), 
+        axis.text.y = element_blank(), 
         panel.spacing=unit(1.5,"lines"), 
         strip.text = element_text(
           size = 9)) + 
@@ -107,7 +108,7 @@ reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "poin
   ) + 
   scale_fill_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) + 
   scale_color_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) + 
-  geom_hline(yintercept = 0, linetype="dashed", color = "red") 
+  geom_vline(xintercept = 0, linetype="dashed", color = "red") 
 ```
 
 # Background
