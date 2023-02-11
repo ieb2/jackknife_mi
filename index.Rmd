@@ -12,18 +12,34 @@ output:
 bibliography: references.bib 
 editor_options: 
   chunk_output_type: console
+  markdown: 
+    wrap: 72
 nocite: |
   @Wang_1998
 biblio-style: "apalike"
 link_citations: true
 ---
+<style type="text/css">
+
+body, td {
+   font-size: 16px;
+}
+code.r{
+  font-size: 16px;
+}
+pre {
+  font-size: 16px
+}
+</style>
+
 
 ```{r setup, include=FALSE, eval=TRUE}
-knitr::opts_chunk$set(warning=FALSE, fig.align="center", echo = FALSE, message = FALSE)
+knitr::opts_chunk$set(warning=FALSE, fig.align="center", echo = FALSE, message = FALSE, fig.retina = 2, fig.width = 12, fig.height = 8)
 ```
 
-
 ```{r}
+labels <- c("10" = "10% Missing", "30" = "30% Missing", "50" = "50% Missing")
+
 # Data management
 library(tidyverse)
 library(kableExtra)
@@ -64,45 +80,110 @@ results <-
 duplicated_names <- duplicated(colnames(results))
 
 results <- results[!duplicated_names]
-
-# Combined Plot 
-labels <- c("10" = "10% Missing", "30" = "30% Missing", "50" = "50% Missing")
-
-reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "point_estimate_boot", "prop_missing")], id.vars = "prop_missing") %>%
-  ggplot(data = .,
-         aes(x = value - 2, fill = variable, color = variable)) + 
-  geom_density(aes(y = ..density..), alpha = 0.25) + 
-  facet_grid(. ~ prop_missing, labeller = labeller(prop_missing = labels)) + 
-  theme(axis.title.y = element_blank(), 
-        panel.spacing=unit(1.5,"lines")) + 
-  theme_bw() + 
-  theme(axis.title.y = element_blank(), 
-        panel.spacing=unit(1.5,"lines"), 
-        strip.text = element_text(
-          size = 9)) + 
-  labs(
-    x = latex2exp::TeX("$\\widehat{\\beta_1} - \\beta_1")
-  ) + 
-  scale_fill_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) + 
-  scale_color_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap"))
-
 ```
 
 # Background
 
-Missing data is a discipline-agnostic issue commonly encountered by statistical practitioners. Given that many statistical procedures require data to be complete (i.e., in the form of an $n \times m$ matrix), the appropriate course of action to be taken in the presence of missing data has long been investigated by statisticians. Today, multiple imputation is accepted as the gold standard in missing data analysis, thanks to the work of Donald Rubin [@buuren_flexible_2012]. In 1977, Rubin proposed using multiple completed versions of the dataset with missing observations, applying the complete-data procedure of interest, and pooling the estimates to draw valid inferences [@buuren_flexible_2012]. The main advantage of multiple imputation, as opposed to single imputation, which had been used by researchers since the early 1970s, is its ability to properly estimate the variance caused by missing observations [@buuren_flexible_2012]. The emphasis placed on variance and uncertainty by Rubin was a departure from the status quo of the time, which was to fill in the missing observation with the most probable value and to proceed with complete case analyses as if the observation had not been missing, to begin with [@buuren_flexible_2012]. This approach, however, fails to incorporate the loss of information caused by missing observations into the estimation of parameters, resulting in the underestimation of variance [@rubin1978multiple].
+Missing data is a discipline-agnostic issue commonly encountered by
+statistical practitioners. Given that many statistical procedures
+require data to be complete (i.e., in the form of an $n \times m$
+matrix), the appropriate course of action to be taken in the presence of
+missing data has long been investigated by statisticians. Today,
+multiple imputation is accepted as the gold standard in missing data
+analysis, thanks to the work of Donald Rubin [@buuren_flexible_2012]. In
+1977, Rubin proposed using multiple completed versions of the dataset
+with missing observations, applying the complete-data procedure of
+interest, and pooling the estimates to draw valid inferences
+[@buuren_flexible_2012]. The main advantage of multiple imputation, as
+opposed to single imputation, which had been used by researchers since
+the early 1970s, is its ability to properly estimate the variance caused
+by missing observations [@buuren_flexible_2012]. The emphasis placed on
+variance and uncertainty by Rubin was a departure from the status quo of
+the time, which was to fill in the missing observation with the most
+probable value and to proceed with complete case analyses as if the
+observation had not been missing, to begin with [@buuren_flexible_2012].
+This approach, however, fails to incorporate the loss of information
+caused by missing observations into the estimation of parameters,
+resulting in the underestimation of variance [@rubin1978multiple].
 
-Like all revolutionary ideas, multiple imputation received harsh criticism following its conception. Perhaps the most notable of the objections came from Fay in 1992, who demonstrated through counterexamples that multiple imputation produced biased covariance estimates [@bartlett_bootstrap_2020]. Fay added that the need for unison between the imputation and analysis model made multiple imputation a poor general-purpose tool, particularly in instances where the imputer and analyst are different individuals [@fay1992inferences; @buuren_flexible_2012]. Fay's arguments led to the conceptualization of congeniality[^background-1] between the imputation and analysis model, which was later accepted to be a requirement to obtain valid inferences from multiple imputation using Rubin's pooling rules (hereafter, Rubin's rules) [@buuren_flexible_2012; @meng_multiple-imputation_1994]. Briefly, uncongeniality refers to the imputation and analysis model making irreconcilably different assumptions regarding the data, which occurs rather frequently in practice [@bartlett_bootstrap_2020]. Although Fay's work initially criticized biases introduced to the covariance matrix following multiple imputation, a similar phenomenon of biased estimates were observed with variance estimators under uncongeniality [@fay1992inferences; @meng_multiple-imputation_1994; @xie_dissecting_2016].
+Like all revolutionary ideas, multiple imputation received harsh
+criticism following its conception. Perhaps the most notable of the
+objections came from Fay in 1992, who demonstrated through
+counterexamples that multiple imputation produced biased covariance
+estimates [@bartlett_bootstrap_2020]. Fay added that the need for unison
+between the imputation and analysis model made multiple imputation a
+poor general-purpose tool, particularly in instances where the imputer
+and analyst are different individuals [@fay1992inferences;
+@buuren_flexible_2012]. Fay's arguments led to the conceptualization of
+congeniality[^1] between the imputation and analysis model, which was
+later accepted to be a requirement to obtain valid inferences from
+multiple imputation using Rubin's pooling rules (hereafter, Rubin's
+rules) [@buuren_flexible_2012; @meng_multiple-imputation_1994]. Briefly,
+uncongeniality refers to the imputation and analysis model making
+irreconcilably different assumptions regarding the data, which occurs
+rather frequently in practice [@bartlett_bootstrap_2020]. Although Fay's
+work initially criticized biases introduced to the covariance matrix
+following multiple imputation, a similar phenomenon of biased estimates
+were observed with variance estimators under uncongeniality
+[@fay1992inferences; @meng_multiple-imputation_1994;
+@xie_dissecting_2016].
 
-[^background-1]: Please see the appendix for a detailed overview of congeniality.
+[^1]: Please see the appendix for a detailed overview of congeniality.
 
-Some of the earliest works demonstrating Rubin's variance estimator to be biased under uncongeniality were from Wang and Robins in 1998, who also proposed an alternate variance estimator in the same paper [@buuren_flexible_2012]. The variance estimator proposed by Wang and Robins requires the calculation of several quantities, which are not easily accessible to the average statistical practitioner [@bartlett_bootstrap_2020]. The challenging construction of the variance estimator proposed by Wang and Robins has resulted in it receiving little-to-no attention in applied settings [@bartlett_bootstrap_2020]. In an attempt to create a more user-friendly variance estimator in instances of suspected uncongeniality, researchers have proposed combining resampling methods with multiple imputation. Of the two main resampling methods, bootstrap has received more attention from multiple imputation researchers compared to jackknife resampling, which has mostly been investigated under single hot-deck imputation. Although particular combinations of bootstrap and multiple imputation have been demonstrated to create asymptotically unbiased estimates of variance, the associated computational cost makes this an active area of research [@bartlett_bootstrap_2020]. Most recently, von Hippel has proposed a bootstrap variance estimator which addresses the issue of computational cost; however, it has been demonstrated to create confidence intervals that are slightly wider compared to traditional bootstrap and multiple imputation combinations [@bartlett_bootstrap_2020]. Given the lower computational cost associated with jackknife resampling, as well as desirable properties demonstrated under single imputation, such as being unbiased in certain scenarios, it is an attractive alternative that should be considered as a variance estimator of multiply imputed data under uncongeniality [@chen_jackknife_2001; @rao_jackknife_1992]. More importantly, however, is the advantages jackknife resampling has over bootstrap resampling in small sample sizes, which are frequently encountered in datasets associated with biological studies.
+Some of the earliest works demonstrating Rubin's variance estimator to
+be biased under uncongeniality were from Wang and Robins in 1998, who
+also proposed an alternate variance estimator in the same paper
+[@buuren_flexible_2012]. The variance estimator proposed by Wang and
+Robins requires the calculation of several quantities, which are not
+easily accessible to the average statistical practitioner
+[@bartlett_bootstrap_2020]. The challenging construction of the variance
+estimator proposed by Wang and Robins has resulted in it receiving
+little-to-no attention in applied settings [@bartlett_bootstrap_2020].
+In an attempt to create a more user-friendly variance estimator in
+instances of suspected uncongeniality, researchers have proposed
+combining resampling methods with multiple imputation. Of the two main
+resampling methods, bootstrap has received more attention from multiple
+imputation researchers compared to jackknife resampling, which has
+mostly been investigated under single hot-deck imputation. Although
+particular combinations of bootstrap and multiple imputation have been
+demonstrated to create asymptotically unbiased estimates of variance,
+the associated computational cost makes this an active area of research
+[@bartlett_bootstrap_2020]. Most recently, von Hippel has proposed a
+bootstrap variance estimator which addresses the issue of computational
+cost; however, it has been demonstrated to create confidence intervals
+that are slightly wider compared to traditional bootstrap and multiple
+imputation combinations [@bartlett_bootstrap_2020]. Given the lower
+computational cost associated with jackknife resampling, as well as
+desirable properties demonstrated under single imputation, such as being
+unbiased in certain scenarios, it is an attractive alternative that
+should be considered as a variance estimator of multiply imputed data
+under uncongeniality [@chen_jackknife_2001; @rao_jackknife_1992]. More
+importantly, however, is the advantages jackknife resampling has over
+bootstrap resampling in small sample sizes, which are frequently
+encountered in datasets associated with biological studies.
 
 ## Bootstrap Resampling
 
-Let $q$ be the set of observations $\left(z_1, z_2, z_3, \dots, z_n \right)$ from the population $Q$ such that $z_i \ \forall \ i \in \{1, 2, 3, \dots, n\}$ is an i.i.d[^background-2] sample from $Q$. Moreover, let $\theta$ be some parameter of interest, with the unbiased estimator $\hat{\theta}$, which is a statistic computed from $F(q)$. Finally, let $G_{\theta}$ be the sampling distribution of $F(q)$. The non-parametric bootstrap, as proposed by Efron, lets $q$ define $Q$ such that the set of observations $\left(z_1, z_2, z_3, \dots, z_n \right)$ appears with equal proportion in the infinitely large population. From there, the set of samples $q^*_1, q^*_2, q^*_3, \dots, q^*_m$ as $m \rightarrow \infty$ are generated by sampling $n$ observations with replacement from $q$, and the statistic of interest $\hat{\theta}$ is calculated by applying $F(q_i) \ \forall \ i \in \{1, 2, 3, \dots, m\}$, which results in $\hat{\theta^*}_1, \hat{\theta^*}_2, \hat{\theta^*}_3, \dots, \hat{\theta^*}_m$.
+Let $q$ be the set of observations
+$\left(z_1, z_2, z_3, \dots, z_n \right)$ from the population $Q$ such
+that $z_i \ \forall \ i \in \{1, 2, 3, \dots, n\}$ is an i.i.d[^2]
+sample from $Q$. Moreover, let $\theta$ be some parameter of interest,
+with the unbiased estimator $\hat{\theta}$, which is a statistic
+computed from $F(q)$. Finally, let $G_{\theta}$ be the sampling
+distribution of $F(q)$. The non-parametric bootstrap, as proposed by
+Efron, lets $q$ define $Q$ such that the set of observations
+$\left(z_1, z_2, z_3, \dots, z_n \right)$ appears with equal proportion
+in the infinitely large population. From there, the set of samples
+$q^*_1, q^*_2, q^*_3, \dots, q^*_m$ as $m \rightarrow \infty$ are
+generated by sampling $n$ observations with replacement from $q$, and
+the statistic of interest $\hat{\theta}$ is calculated by applying
+$F(q_i) \ \forall \ i \in \{1, 2, 3, \dots, m\}$, which results in
+$\hat{\theta^*}_1, \hat{\theta^*}_2, \hat{\theta^*}_3, \dots, \hat{\theta^*}_m$.
 
-[^background-2]: i.i.d stands for independent and identically distributed, which is used to summarize two characteristics about the data; (1) that the samples are all taken from the same probability distribution, and (2) that the samples are obtained independently.  
+[^2]: i.i.d stands for independent and identically distributed, which is
+    used to summarize two characteristics about the data; (1) that the
+    samples are all taken from the same probability distribution, and
+    (2) that the samples are obtained independently.
 
 Finally, the point estimate is obtained by
 
@@ -112,13 +193,40 @@ and the variance is obtained by
 
 $$\text{var}(\hat{\theta}) = m^{-1}\sum^m_{i = 1} \left(\hat{\theta^*}_i - \hat{\theta}\right)^2$$
 
-Since Efron's proposal of the non-parametric bootstrap, statisticians have widely utilized it thanks to its ease of implementation and the rapidly increasing computational power available to statistical practitioners [@LaFontaine_2021]. However, the properties of bootstrap resampling have their basis in the asymptotic theory, which holds in large sample sizes [@Wang_1998; @Mammen_1992]. The minimum sample size required to utilize bootstrap resampling and obtain asymptotically unbiased estimates is highly context-dependent; in certain situations, a minimum sample size of $n = 200$ has been suggested, with other authors suggesting between $n = 100$ to $n = 500$ [@Anderson_Gerbing_1984; @Bentler_Chou_1987; @Jackson_2001]. Given that in many biological studies, the minimum sample size required for asymptotically unbiased estimates may not be achieved, jackknife resampling, a method that predates the bootstrap, may be considered [@Faber_Fonseca_2014].
+Since Efron's proposal of the non-parametric bootstrap, statisticians
+have widely utilized it thanks to its ease of implementation and the
+rapidly increasing computational power available to statistical
+practitioners [@LaFontaine_2021]. However, the properties of bootstrap
+resampling have their basis in the asymptotic theory, which holds in
+large sample sizes [@Wang_1998; @Mammen_1992]. The minimum sample size
+required to utilize bootstrap resampling and obtain asymptotically
+unbiased estimates is highly context-dependent; in certain situations, a
+minimum sample size of $n = 200$ has been suggested, with other authors
+suggesting between $n = 100$ to $n = 500$ [@Anderson_Gerbing_1984;
+@Bentler_Chou_1987; @Jackson_2001]. Given that in many biological
+studies, the minimum sample size required for asymptotically unbiased
+estimates may not be achieved, jackknife resampling, a method that
+predates the bootstrap, may be considered [@Faber_Fonseca_2014].
 
-## Jackknife Resampling
+## Jackknife Resampling {.tabset .tabset-fade .tabset-pills}
 
-### Leave-One-Out Jackknife {#sec-del}
+### Leave-One-Out Jackknife 
 
-Let $q$ be the set of observations $\left(z_1, z_2, z_3, \dots, z_n \right)$ from the population $Q$ such that $z_i \ \forall \ i \in \{1, 2, 3, \dots, n\}$ is an i.i.d sample from $Q$. Moreover, let $\theta$ be some parameter of interest, with the unbiased estimator $\hat{\theta}$, which is a statistic computed from $F(q)$. Finally, let $G_{\theta}$ be the sampling distribution of $F(q)$. The jackknife, as proposed by Quenouille and expanded on by Tukey, creates $n$ leave-one-out subsamples from $q$ such that $q_{-1} = \left(z_2, z_3, z_4, \dots, z_n \right),$ $q_{-2} = \left(z_1, z_3, z_4, \dots, z_n \right), \dots, q_{-n} = \left(z_1, z_2, z_3, \dots, z_{n-1} \right)$ and $\lvert q_{-i}\rvert = n-1 \ \forall i \in \{1, 2, 3, \dots, n\}$. Thereafter, the statistic of interest $\hat{\theta}$ is calculated by applying $F(q_i) \ \forall \ i \in \{1, 2, 3, \dots, n\}$, which results in $\hat{\theta^*}_1, \hat{\theta^*}_2, \hat{\theta^*}_3, \dots, \hat{\theta^*}_m$.
+Let $q$ be the set of observations
+$\left(z_1, z_2, z_3, \dots, z_n \right)$ from the population $Q$ such
+that $z_i \ \forall \ i \in \{1, 2, 3, \dots, n\}$ is an i.i.d sample
+from $Q$. Moreover, let $\theta$ be some parameter of interest, with the
+unbiased estimator $\hat{\theta}$, which is a statistic computed from
+$F(q)$. Finally, let $G_{\theta}$ be the sampling distribution of
+$F(q)$. The jackknife, as proposed by Quenouille and expanded on by
+Tukey, creates $n$ leave-one-out subsamples from $q$ such that
+$q_{-1} = \left(z_2, z_3, z_4, \dots, z_n \right),$
+$q_{-2} = \left(z_1, z_3, z_4, \dots, z_n \right), \dots, q_{-n} = \left(z_1, z_2, z_3, \dots, z_{n-1} \right)$
+and $\lvert q_{-i}\rvert = n-1 \ \forall i \in \{1, 2, 3, \dots, n\}$.
+Thereafter, the statistic of interest $\hat{\theta}$ is calculated by
+applying $F(q_i) \ \forall \ i \in \{1, 2, 3, \dots, n\}$, which results
+in
+$\hat{\theta^*}_1, \hat{\theta^*}_2, \hat{\theta^*}_3, \dots, \hat{\theta^*}_m$.
 
 Finally, the point estimate is obtained by
 
@@ -134,7 +242,31 @@ $$
 
 ### Delete-*d* Jackknife
 
-The delete-*d* jackknife may be seen as a generalized version of the traditional jackknife (hereinafter, jackknife). Although in many situations, the jackknife provides a computationally efficient means to estimate the variance of an estimator, it fails with non-smooth statistics. For non-smooth statistics, such as the percentiles of the data, the jackknife fails because the statistic varies significantly between any two subsamples [@chen_jackknife_2001]. In such cases, the delete-*d* jackknife provides an alternative estimator that can provide asymptotically unbiased estimates for non-smooth statistics [@rao_jackknife_1992]. Similarly, let $q$ be the set of observations $\left(z_1, z_2, z_3, \dots, z_n \right)$ from the population $Q$ such that $z_i \ \forall \ i \in \{1, 2, 3, \dots, n\}$ is an i.i.d sample from $Q$. Moreover, let $\theta$ be some parameter of interest, with the unbiased estimator $\hat{\theta}$, which is a statistic computed from $F(q)$. Finally, let $G_{\theta}$ be the sampling distribution of $F(q)$. The delete-*d* jackknife, creates $n \choose d$ subsamples of $q$ such that $\lvert q_i \rvert = n-d$ Thereafter, the statistic of interest $\hat{\theta}$ is calculated by applying $F(q_i) \ \forall \ i \in \{1, 2, 3, \dots, {n \choose d} \}$, which results in $\hat{\theta^*}_1, \hat{\theta^*}_2, \hat{\theta^*}_3, \dots, \hat{\theta^*}_{n \choose d}$. In many cases, however, $n \choose d$ is a large value that yields this approach computationally unfeasible. In such instances, certain guidelines, as discussed in following chapters, may be employed to determine a value of subsamples that still provide proper estimates.
+The delete-*d* jackknife may be seen as a generalized version of the
+traditional jackknife (hereinafter, jackknife). Although in many
+situations, the jackknife provides a computationally efficient means to
+estimate the variance of an estimator, it fails with non-smooth
+statistics. For non-smooth statistics, such as the percentiles of the
+data, the jackknife fails because the statistic varies significantly
+between any two subsamples [@chen_jackknife_2001]. In such cases, the
+delete-*d* jackknife provides an alternative estimator that can provide
+asymptotically unbiased estimates for non-smooth statistics
+[@rao_jackknife_1992]. Similarly, let $q$ be the set of observations
+$\left(z_1, z_2, z_3, \dots, z_n \right)$ from the population $Q$ such
+that $z_i \ \forall \ i \in \{1, 2, 3, \dots, n\}$ is an i.i.d sample
+from $Q$. Moreover, let $\theta$ be some parameter of interest, with the
+unbiased estimator $\hat{\theta}$, which is a statistic computed from
+$F(q)$. Finally, let $G_{\theta}$ be the sampling distribution of
+$F(q)$. The delete-*d* jackknife, creates $n \choose d$ subsamples of
+$q$ such that $\lvert q_i \rvert = n-d$ Thereafter, the statistic of
+interest $\hat{\theta}$ is calculated by applying
+$F(q_i) \ \forall \ i \in \{1, 2, 3, \dots, {n \choose d} \}$, which
+results in
+$\hat{\theta^*}_1, \hat{\theta^*}_2, \hat{\theta^*}_3, \dots, \hat{\theta^*}_{n \choose d}$.
+In many cases, however, $n \choose d$ is a large value that yields this
+approach computationally unfeasible. In such instances, certain
+guidelines, as discussed in following chapters, may be employed to
+determine a value of subsamples that still provide proper estimates.
 
 Finally, the point estimate is obtained by
 
@@ -150,66 +282,150 @@ $$
 
 ## Comparison of Jackknife and Bootstrap Resampling
 
-Given their comparable construction and application, the jackknife and bootstrap make similar assumptions regarding the data. Most notably, both assume that the function used to estimate the parameter is smooth. Formally, a smooth function is defined as one that has continuous derivatives over some domain, with the minimum number of derivatives required to be considered smooth varying per the question at hand [@Weisstein]. From a statistical perspective, if the function used to estimate the parameter is smooth on some domain $(a, b)$, $[F(q_i) - F(q_z)] \rightarrow 0$ as $\lvert q_i - q_z\rvert \rightarrow 0$. Meaning, among a set of conceivable, non-identical samples from the population, minor differences between possible samples will only result in minor differences between the statistic estimated [@chen_jackknife_2001]. Due to its deterministic nature, the jackknife tends to perform poorly in estimating non-smooth statistics [@wicklin_2017]. However, its deterministic nature also yields the jackknife superior to bootstrapping in smaller datasets. To combat the issue regarding non-smooth statistics, a generalized jackknife resampling scheme, called the *drop-d-jackknife* has been proposed, which was utilized in this estimator [@chen_jackknife_2001].
+Given their comparable construction and application, the jackknife and
+bootstrap make similar assumptions regarding the data. Most notably,
+both assume that the function used to estimate the parameter is smooth.
+Formally, a smooth function is defined as one that has continuous
+derivatives over some domain, with the minimum number of derivatives
+required to be considered smooth varying per the question at hand
+[@Weisstein]. From a statistical perspective, if the function used to
+estimate the parameter is smooth on some domain $(a, b)$,
+$[F(q_i) - F(q_z)] \rightarrow 0$ as
+$\lvert q_i - q_z\rvert \rightarrow 0$. Meaning, among a set of
+conceivable, non-identical samples from the population, minor
+differences between possible samples will only result in minor
+differences between the statistic estimated [@chen_jackknife_2001]. Due
+to its deterministic nature, the jackknife tends to perform poorly in
+estimating non-smooth statistics [@wicklin_2017]. However, its
+deterministic nature also yields the jackknife superior to bootstrapping
+in smaller datasets. To combat the issue regarding non-smooth
+statistics, a generalized jackknife resampling scheme, called the
+*drop-d-jackknife* has been proposed, which was utilized in this
+estimator [@chen_jackknife_2001].
 
 ## Multiple Imputation
 
-Multiple imputation is a missing data management method based on both Bayesian and frequentist inference proposed by Donald Rubin in the late 1970s [@bartlett_bootstrap_2020; @buuren_flexible_2012]. Before Rubin's proposal, statisticians had been utilizing various single-imputation methods and proceeding with the analyses of interest as if data had not been missing. However, Rubin noted that single-imputation methods could not accurately capture the uncertainty caused by the missing observations [@buuren_flexible_2012]. In response, he proposed imputing any given datum with a series of plausible values from its posterior distribution, thus creating several complete versions of the observed dataset and applying the complete data analysis procedure to each generated dataset. He proposed a series of rules that could derive point and variance estimates that would adequately reflect the uncertainty caused by the missing observations.
+Multiple imputation is a missing data management method based on both
+Bayesian and frequentist inference proposed by Donald Rubin in the late
+1970s [@bartlett_bootstrap_2020; @buuren_flexible_2012]. Before Rubin's
+proposal, statisticians had been utilizing various single-imputation
+methods and proceeding with the analyses of interest as if data had not
+been missing. However, Rubin noted that single-imputation methods could
+not accurately capture the uncertainty caused by the missing
+observations [@buuren_flexible_2012]. In response, he proposed imputing
+any given datum with a series of plausible values from its posterior
+distribution, thus creating several complete versions of the observed
+dataset and applying the complete data analysis procedure to each
+generated dataset. He proposed a series of rules that could derive point
+and variance estimates that would adequately reflect the uncertainty
+caused by the missing observations.
 
-Rubin's idea to utilize multiple imputation was ridiculed at first, not only due to its drastically different interpretation of uncertainty but because of how unfeasible it was at the time [@buuren_flexible_2012]. Rubin's method would require statisticians to come up with an imputation model that would allow them to draw values from the posterior distribution. After that, they would have to draw several values and repeat the analysis multiple times with the numerous complete datasets. The preceding workflow was challenging to implement in an era of low computational power and expensive digital storage [@buuren_flexible_2012]. As such, Rubin's ideas did not receive immediate acceptance. However, since the late 1990s, with the increased access to computers and user-friendly statistical packages capable of implementing complex procedures, multiple imputations have been adopted and heavily researched, leading to various modified algorithms being utilized under different conditions to obtain valid inferences in the presence of missing data [@buuren_flexible_2012]. At this time, one of the most notable challenges remaining with multiple imputation is the concept of congeniality. Congeniality may be thought of as the imputation model and the analysis model making compatible assumptions regarding the data. In the early 1990s, Fay and Meng demonstrated that congeniality was required to obtain valid inferences from multiple imputation [@bartlett_bootstrap_2020; @bartlett_reference-based_2021].
+Rubin's idea to utilize multiple imputation was ridiculed at first, not
+only due to its drastically different interpretation of uncertainty but
+because of how unfeasible it was at the time [@buuren_flexible_2012].
+Rubin's method would require statisticians to come up with an imputation
+model that would allow them to draw values from the posterior
+distribution. After that, they would have to draw several values and
+repeat the analysis multiple times with the numerous complete datasets.
+The preceding workflow was challenging to implement in an era of low
+computational power and expensive digital storage
+[@buuren_flexible_2012]. As such, Rubin's ideas did not receive
+immediate acceptance. However, since the late 1990s, with the increased
+access to computers and user-friendly statistical packages capable of
+implementing complex procedures, multiple imputations have been adopted
+and heavily researched, leading to various modified algorithms being
+utilized under different conditions to obtain valid inferences in the
+presence of missing data [@buuren_flexible_2012]. At this time, one of
+the most notable challenges remaining with multiple imputation is the
+concept of congeniality. Congeniality may be thought of as the
+imputation model and the analysis model making compatible assumptions
+regarding the data. In the early 1990s, Fay and Meng demonstrated that
+congeniality was required to obtain valid inferences from multiple
+imputation [@bartlett_bootstrap_2020; @bartlett_reference-based_2021].
 
 ### Current State of Multiple Imputation
 
-Today, with the advent of public databases, the imputer and the analyst may no longer be the same person. Even in the absence of such cases, the imputation and analysis model may still be uncongenial if there does not exist a unifying Bayesian model which embeds the imputer's imputation model and the analyst's complete data procedure [@bartlett_reference-based_2021]. As such, researchers have begun to develop approaches that combine resampling methods with multiple imputation to obtain valid inferences even under uncongeniality. Of the currently proposed methods, there exist two main limitations: a) the increased computational cost brought on by resampling methods alongside multiple imputation, and b) inference in smaller sample sizes. At this time, nearly all mainstream approaches proposed by researchers utilize bootstrap resampling and multiple imputation to obtain valid inferences under uncongeniality; however, as discussed above, bootstrap resampling requires a certain sample size to provide proper estimates. As a viable alternative to be utilized in instances where there is a small sample size, a jackknife variance estimator is proposed.
+Today, with the advent of public databases, the imputer and the analyst
+may no longer be the same person. Even in the absence of such cases, the
+imputation and analysis model may still be uncongenial if there does not
+exist a unifying Bayesian model which embeds the imputer's imputation
+model and the analyst's complete data procedure
+[@bartlett_reference-based_2021]. As such, researchers have begun to
+develop approaches that combine resampling methods with multiple
+imputation to obtain valid inferences even under uncongeniality. Of the
+currently proposed methods, there exist two main limitations: a) the
+increased computational cost brought on by resampling methods alongside
+multiple imputation, and b) inference in smaller sample sizes. At this
+time, nearly all mainstream approaches proposed by researchers utilize
+bootstrap resampling and multiple imputation to obtain valid inferences
+under uncongeniality; however, as discussed above, bootstrap resampling
+requires a certain sample size to provide proper estimates. As a viable
+alternative to be utilized in instances where there is a small sample
+size, a jackknife variance estimator is proposed.
 
-# Methods 
+# Methods
 
-For the proposed Monte Carlo simulation, $N$ = 10,000 datasets were generated with the following characteristics: A response variable, $Y$, where 30% of the observations were missing at random (MAR), and an $n \times q$ matrix of fully observed covariates, where $n = 50$ was the sample size, and $q = 3$ the number of covariates. 
+For the proposed Monte Carlo simulation, $N$ = 10,000 datasets were
+generated with the following characteristics: A response variable, $Y$,
+where 30% of the observations were missing at random (MAR), and an
+$n \times q$ matrix of fully observed covariates, where $n = 50$ was the
+sample size, and $q = 3$ the number of covariates.
 
-Formally 
+Formally
 
 $$
 \begin{bmatrix} V1 \\V2 \\ V3 \end{bmatrix} \sim N\left(\begin{bmatrix} 1\\ 1 \\ 1 \end{bmatrix}, \begin{bmatrix} 1 & 0.5 & 0.5 \\
 0.5 & 1 & 0.5 \\
 0.5 & 0.5 & 1
 \end{bmatrix}\right)
-$$
-With 
+$$ With
 
 $$
 \beta_{V_1} = 2 ; \  \beta_{V_2} = 5 ; \ \beta_{V_3} = 8
-$$
-The outcome variable was simulated such that: 
+$$ The outcome variable was simulated such that:
 
 $$
 Y = V_1 + V_2 + V_3 + \epsilon
-$$
-Where 
+$$ Where
 
 $$
 \epsilon \sim N(\mu = 0, \sigma \propto V_2)
-$$
-Thus, data were simulated with heteroskedastic errors, which yields the imputation and analysis models congenial, yet misspecified. 
+$$ Thus, data were simulated with heteroskedastic errors, which yields
+the imputation and analysis models congenial, yet misspecified.
 
-Formally, the analysis model of interest was 
+Formally, the analysis model of interest was
 
 $$
 \widehat{Y} \sim \widehat{\beta}_{V_1} + \widehat{\beta}_{V_2} + \widehat{\beta}_{V_3} 
-$$
-And the imputation model was 
+$$ And the imputation model was
 
 $$
 \widehat{Y}_{\text{mis}} \sim \widehat{\beta}_{V_1} + \widehat{\beta}_{V_2} + \widehat{\beta}_{V_3}
 $$
 
-Where the imputation method of choice was predictive mean matching (PMM). 
+Where the imputation method of choice was predictive mean matching
+(PMM).
 
-All generated datasets were analysed using three approaches: 
+All generated datasets were analysed using three approaches:
 
-  * **Bootstrap then multiply impute:** The observed dataset with missing observations was initially bootstrapped $n = 200$ times. Thereafter, each of the bootstrap samples were imputed $m = 2$ times, with a maximum of $maxit = 5$ iterations. The mean of the bootstrap estimates served as the final point estimate, and a 95% confidence interval was generated through the percentile method, where the $\alpha/2^{th}$ and $1-(\alpha/2)^{th}$ percentiles were the lower and upper bounds, respectively. The R package, *bootImpute* was utilized for this process. 
+-   **Bootstrap then multiply impute:** The observed dataset with
+    missing observations was initially bootstrapped $n = 200$ times.
+    Thereafter, each of the bootstrap samples were imputed $m = 2$
+    times, with a maximum of $maxit = 5$ iterations. The mean of the
+    bootstrap estimates served as the final point estimate, and a 95%
+    confidence interval was generated through the percentile method,
+    where the $\alpha/2^{th}$ and $1-(\alpha/2)^{th}$ percentiles were
+    the lower and upper bounds, respectively. The R package,
+    *bootImpute* was utilized for this process.
 
-  * **Multiply impute then use Rubin's rules:** The observed dataset with missing observations was imputed $m = 10$ times, with a maximum of $maxit = 5$ iterations. The point estimate, as well as the confidence interval was obtained through the following rules proposed by Donald Rubin. The *mice* package was utilized for this process. 
+-   **Multiply impute then use Rubin's rules:** The observed dataset
+    with missing observations was imputed $m = 10$ times, with a maximum
+    of $maxit = 5$ iterations. The point estimate, as well as the
+    confidence interval was obtained through the following rules
+    proposed by Donald Rubin. The *mice* package was utilized for this
+    process.
 
+```{=tex}
 \begin{align}
 \bar{\theta} &= \frac{1}{m}\left (\sum_{i=1}^m{\theta_i}\right ) \\ 
 V_{\text{within}} &= \frac{1}{m} \sum_{i=1}^m{SE_i^2} \\ 
@@ -217,17 +433,33 @@ V_{\text{between}} &= \frac{\sum_{i=1}^m (\theta_i - \overline{\theta})^2}{m-1} 
 V_{\text{total}} &= V_W + V_B + \frac{V_B}{m} \\ 
 \bar{\theta} &\pm t_{df,1-\alpha/2} * \sqrt{V_{\text{total}}} 
 \end{align}
+```
+-   **Jackknife then multiply impute:** Although a more detailed
+    overview of the proposed jackknife estimator is provided in the
+    appendix, briefly, the observed dataset was jackknifed to obtain
+    $j = 200$ samples, each of which were imputed $m = 2$ times, with a
+    maximum of $maxit = 5$ iterations. The mean of the jackknife
+    estimates served as the final point estimate, and a 95% confidence
+    interval was generated through the percentile method, where the
+    $\alpha/2^{th}$ and $1-(\alpha/2)^{th}$ percentiles were the lower
+    and upper bounds, respectively.
 
-  * **Jackknife then multiply impute:** Although a more detailed overview of the proposed jackknife estimator is provided in the appendix, briefly, the observed dataset was jackknifed to obtain $j = 200$ samples, each of which were imputed $m = 2$ times, with a maximum of $maxit = 5$ iterations. The mean of the jackknife estimates served as the final point estimate, and a 95% confidence interval was generated through the percentile method, where the $\alpha/2^{th}$ and $1-(\alpha/2)^{th}$ percentiles were the lower and upper bounds, respectively. 
+Thereafter, the methods examined were compared concerning their point
+estimates, confidence intervals, and computational expense.
 
-Thereafter, the methods examined were compared concerning their point estimates, confidence intervals, and computational expense. 
+All analyses were conducted using R 4.2.2 (Innocent and Trusting).
 
-All analyses were conducted using R 4.2.2 (Innocent and Trusting). 
+# Results {.tabset .tabset-fade .tabset-pills}
 
-# Results 
-Per the Methods section, the performance of the proposed jackknife estimator was compared to two leading methods in the literature, Rubin's rules following multiple imputation and Bootstrap resampling prior to multiple imputation. The methods were compared concerning the coverage probabilities they generated, the widths of their respective confidence intervals, their computational expense, and the bias of their point estimators.
+Per the Methods section, the performance of the proposed jackknife
+estimator was compared to two leading methods in the literature, Rubin's
+rules following multiple imputation and Bootstrap resampling prior to
+multiple imputation. The methods were compared concerning the coverage
+probabilities they generated, the widths of their respective confidence
+intervals, their computational expense, and the bias of their point
+estimators.
 
-## Point Estimation 
+## Point Estimation
 
 ```{r}
 reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "point_estimate_boot", "prop_missing")], id.vars = "prop_missing") %>%
@@ -256,17 +488,22 @@ reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "poin
     show.legend=FALSE
   ) +
   coord_cartesian(ylim = c(-1.7, 1.7), clip = "on") + 
-  theme(axis.title.x = element_blank(),
-        axis.ticks.x =element_blank(),
-        axis.text.x = element_blank(), 
-        panel.spacing=unit(1.5,"lines")) + 
+  theme(
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.title.y = element_text(size = 16), 
+  axis.text.y = element_text(size = 14), 
+  axis.ticks.y = element_text(size = 14)) + 
   theme_bw() + 
   theme(axis.title.x = element_blank(), 
         axis.ticks.x = element_blank(), 
-        axis.text.x = element_blank(), 
+        axis.text.x = element_blank(),
+        legend.text = element_text(size=14), 
+        legend.title = element_text(size=16),
         panel.spacing=unit(1.5,"lines"), 
         strip.text = element_text(
-          size = 9)) + 
+          size = 14), 
+        plot.title = element_text(size = 20)) + 
   labs(
     y = latex2exp::TeX("$\\widehat{\\beta_1} - \\beta_1"), 
     title = "Density Plots for Point Estimate Bias"
@@ -276,8 +513,23 @@ reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "poin
   geom_hline(yintercept = 0, linetype="dashed", color = "red") 
 ```
 
-
-At lower levels of missingness, the point estimation performance of the methods examined is comparable, with nearly unbiased estimates across the board. As the proportion of missingness increases, however, negative biases are noted, particularly for Rubin's approach. In contrast, it is noted that the jackknife approach continues to provide nearly unbiased estimates, even at high proportions of missingness, where the two other methods have begun to fail. Given the asymptotic nature of bootstrap resampling, it is reasonable to see failures arise as more and more data is lost to missingness. The foregoing idea likely accounts for the slight decrease in performance experienced by the bootstrap approach as the proportion of missingness changes from 10% to 30% and the much more significant deterioration in performance transitioning from 30% to 50%. The later transition likely causes the bootstrapped samples to become less representative of the population, causing biased point estimates. It is interesting to note that, despite its tremendous computational cost, the bootstrap method provides only slightly better point estimates compared to Rubin's rules at 50% missingness at comparable variability. 
+At lower levels of missingness, the point estimation performance of the
+methods examined is comparable, with nearly unbiased estimates across
+the board. As the proportion of missingness increases, however, negative
+biases are noted, particularly for Rubin's approach. In contrast, it is
+noted that the jackknife approach continues to provide nearly unbiased
+estimates, even at high proportions of missingness, where the two other
+methods have begun to fail. Given the asymptotic nature of bootstrap
+resampling, it is reasonable to see failures arise as more and more data
+is lost to missingness. The foregoing idea likely accounts for the
+slight decrease in performance experienced by the bootstrap approach as
+the proportion of missingness changes from 10% to 30% and the much more
+significant deterioration in performance transitioning from 30% to 50%.
+The later transition likely causes the bootstrapped samples to become
+less representative of the population, causing biased point estimates.
+It is interesting to note that, despite its tremendous computational
+cost, the bootstrap method provides only slightly better point estimates
+compared to Rubin's rules at 50% missingness at comparable variability.
 
 ## Confidence Intervals
 
@@ -285,7 +537,7 @@ At lower levels of missingness, the point estimation performance of the methods 
 reshape2::melt(results[c("jackknife_width", "boot_width", "rubin_width", "prop_missing")], id.vars = "prop_missing") %>%
   ggplot(., 
          aes(x = variable, fill = variable, color = variable, y = value)) + 
-  facet_grid(. ~ prop_missing, labeller = labeller(prop_missing = labels)) +
+  facet_grid(. ~ prop_missing, labeller = labeller(prop_missing = labels)) + 
   coord_cartesian(ylim = c(0, 6), clip = "on") + 
   ggdist::stat_halfeye(
     alpha = 1,
@@ -308,17 +560,22 @@ reshape2::melt(results[c("jackknife_width", "boot_width", "rubin_width", "prop_m
     outlier.shape = NA, 
     show.legend=FALSE
   ) +
-  theme(axis.title.x = element_blank(),
-        axis.ticks.x =element_blank(),
-        axis.text.x = element_blank(), 
-        panel.spacing=unit(1.5,"lines")) + 
+  theme(
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.title.y = element_text(size = 16), 
+  axis.text.y = element_text(size = 14), 
+  axis.ticks.y = element_text(size = 14)) + 
   theme_bw() + 
   theme(axis.title.x = element_blank(), 
         axis.ticks.x = element_blank(), 
-        axis.text.x = element_blank(), 
+        axis.text.x = element_blank(),
+        legend.text = element_text(size=14), 
+        legend.title = element_text(size=16),
         panel.spacing=unit(1.5,"lines"), 
         strip.text = element_text(
-          size = 9)) + 
+          size = 14), 
+        plot.title = element_text(size = 20)) + 
   labs(
     y = "CI Width",
     title = "Density Plots for Confidence Interval Width"
@@ -326,7 +583,6 @@ reshape2::melt(results[c("jackknife_width", "boot_width", "rubin_width", "prop_m
   scale_fill_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) + 
   scale_color_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) 
 ```
-
 
 ```{r}
 library(kableExtra)
@@ -373,7 +629,7 @@ ggplot(benchmark_detailed_releveled,
     justification = -.3, 
     point_colour = NA) + 
   geom_point(
-    size = 0.01,
+    size = 1,
     alpha = 0.5,
     position = position_jitter(
       seed = 1, width = 0.1, height = 0.1
@@ -386,19 +642,27 @@ ggplot(benchmark_detailed_releveled,
     outlier.shape = NA, 
     show.legend=FALSE
   ) + 
-  theme_bw() + 
+  theme_bw() +
+  theme(
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.title.y = element_text(size = 16), 
+  axis.text.y = element_text(size = 14)) + 
   theme(axis.title.y = element_blank(), 
         axis.ticks.y = element_blank(), 
         axis.text.y = element_blank(), 
         axis.ticks.x.top = element_blank(),
         axis.text.x.top = element_blank(),
+        legend.text = element_text(size=14), 
+        legend.title = element_text(size=16),
         legend.position = "none",
         panel.spacing=unit(1.5,"lines"), 
         strip.text = element_text(
-          size = 9)) + labs(x = "Time (seconds)", title = "Density Plots for Computational Time") + 
+          size = 14), 
+        plot.title = element_text(size = 20)) + 
+  labs(x = "Time (seconds)", title = "Density Plots for Computational Time") + 
   scale_x_sqrt() 
 ```
-
 
 ```{r}
 benchmark_detailed_releveled %>%
@@ -413,54 +677,109 @@ benchmark_detailed_releveled %>%
   kable_material(c("striped", "hover"))
 ```
 
+# Discussion
 
-# Discussion 
+# Appendix 
 
-# Appendix
+## Notation
 
-## Notation 
-  
-  * $N$ is the total number of units in the finite population being targeted.  
-  * $X$ is an $N \times q$ matrix of fully observed covariates.  
-  * $Y$ is an $N \times p$ matrix of partially observed outcome variables.  
-  * $R$ is an $N \times p$ matrix of response indicators (i.e., $R_{ij} = 1$ if the response on $Y_{ij}$ is obtained and $R_{ij} = 0$ otherwise.)  
-  * $Q$ is an unknown quantity of interest to the analyst. 
-  * $Z_c = \{X, Y_{inc}\}$ is the complete data. 
-  * $Z_o = \{X, Y_{obs}, R_{inc}\}$ is the incomplete (i.e., observed) data. 
-  * The analyst's complete-data procedure is summarized by $\mathscr{P}_{com} = [\hat{Q}(X, Y_{inc}), U(X, Y_{inc})]$,   where $\hat{Q}(X, Y_{inc})$ is an estimator of $Q$ with associated variance $U(X, Y_{inc}.)$ 
-  * $R$ is not a part of $\mathscr{P}_{com}$, as the missing at random assumption implies that the response behavior itself carries no information about $Q$. 
+-   $N$ is the total number of units in the finite population being
+    targeted.\
+-   $X$ is an $N \times q$ matrix of fully observed covariates.\
+-   $Y$ is an $N \times p$ matrix of partially observed outcome
+    variables.\
+-   $R$ is an $N \times p$ matrix of response indicators (i.e.,
+    $R_{ij} = 1$ if the response on $Y_{ij}$ is obtained and
+    $R_{ij} = 0$ otherwise.)\
+-   $Q$ is an unknown quantity of interest to the analyst.
+-   $Z_c = \{X, Y_{inc}\}$ is the complete data.
+-   $Z_o = \{X, Y_{obs}, R_{inc}\}$ is the incomplete (i.e., observed)
+    data.
+-   The analyst's complete-data procedure is summarized by
+    $\mathscr{P}_{com} = [\hat{Q}(X, Y_{inc}), U(X, Y_{inc})]$, where
+    $\hat{Q}(X, Y_{inc})$ is an estimator of $Q$ with associated
+    variance $U(X, Y_{inc}.)$
+-   $R$ is not a part of $\mathscr{P}_{com}$, as the missing at random
+    assumption implies that the response behavior itself carries no
+    information about $Q$.
 
-## Formal Definition of Congeniality
+## Formal Definition of Congeniality {.tabset .tabset-fade .tabset-pills}
 
-In short, one may define congeniality as the imputer and analyst making different assumptions regarding the data. The following two-part formal definition of uncongeniality was proposed by Meng in 1994, and will be utilized in our research. Meeting the assumptions set forth in the following two conditions qualifies the imputation model as being congenial to the analysis model, or vice versa. 
+In short, one may define congeniality as the imputer and analyst making
+different assumptions regarding the data. The following two-part formal
+definition of uncongeniality was proposed by Meng in 1994, and will be
+utilized in our research. Meeting the assumptions set forth in the
+following two conditions qualifies the imputation model as being
+congenial to the analysis model, or vice versa.
 
 ### Condition I
-Let $E_f$ and $V_f$ denote posterior mean and variance with respect to $f$, respectively. A Bayesian model $f$ is said to be congenial to the analysis procedure $\mathscr{P} \equiv \{\mathscr{P}_{obs}; \mathscr{P}_{com}\}$ for given $Z_o$ if the following hold: 
 
-  * The posterior mean and variance of $\theta$ under $f$ given the incomplete data are asymptotically the same as the estimate and variance from the analyst's incomplete-data procedure $\mathscr{P}_{obs}$, that is, 
-    \begin{equation}
+Let $E_f$ and $V_f$ denote posterior mean and variance with respect to
+$f$, respectively. A Bayesian model $f$ is said to be congenial to the
+analysis procedure
+$\mathscr{P} \equiv \{\mathscr{P}_{obs}; \mathscr{P}_{com}\}$ for given
+$Z_o$ if the following hold:
+
+-   The posterior mean and variance of $\theta$ under $f$ given the
+    incomplete data are asymptotically the same as the estimate and
+    variance from the analyst's incomplete-data procedure
+    $\mathscr{P}_{obs}$, that is, \begin{equation}
         [\hat{\theta}(Z_o), U(Z_o)] \simeq [E_f[\theta | Z_o], V_f[\theta | Z_o]]
     \end{equation}
-    
-  * The posterior mean and variance of $\theta$ under $f$ given the complete data are asymptotically the same as the estimate and variance from the analyst's complete-data procedure $\mathscr{P}_{com}$, that is, 
-    \begin{equation}
+
+-   The posterior mean and variance of $\theta$ under $f$ given the
+    complete data are asymptotically the same as the estimate and
+    variance from the analyst's complete-data procedure
+    $\mathscr{P}_{com}$, that is, \begin{equation}
          [\hat{\theta}(Z_c), U(Z_c)] \simeq [E_f[\theta | Z_c], V_f[\theta | Z_c]]
     \end{equation}
-    
-    for any possible $Y_{inc} = (Y_{obs}, Y_{miss})$ with $Y_{obs}$ conditioned upon.
 
-If the foregoing conditions are met, $f$ is said to be second-moment congenial to $\mathscr{P}$.
+    for any possible $Y_{inc} = (Y_{obs}, Y_{miss})$ with $Y_{obs}$
+    conditioned upon.
 
-### Condition II 
+If the foregoing conditions are met, $f$ is said to be second-moment
+congenial to $\mathscr{P}$.
 
-The analysis procedure $\mathscr{P}$ is said to be congenial to the imputation model $g(Y_{miss}|Z_o, A)$ where $A$ represents possible additional data the imputer has access to, if one can find an $f$ such that (**i**) $f$ is congenial to $\mathscr{P}$ and (**ii**) the posterior predictive density for $Y_{miss}$ derived under $f$ is identical to the imputation model $f(Y_{miss}|Z_o) = g(Y_{miss}|Z_o, A) \ \forall \ Y_{miss}$.
+### Condition II
+
+The analysis procedure $\mathscr{P}$ is said to be congenial to the
+imputation model $g(Y_{miss}|Z_o, A)$ where $A$ represents possible
+additional data the imputer has access to, if one can find an $f$ such
+that (**i**) $f$ is congenial to $\mathscr{P}$ and (**ii**) the
+posterior predictive density for $Y_{miss}$ derived under $f$ is
+identical to the imputation model
+$f(Y_{miss}|Z_o) = g(Y_{miss}|Z_o, A) \ \forall \ Y_{miss}$.
 
 ## Mechanisms of Missingness
 
-The underlying mechanism of missingness can be classified as missing completely at random (MCAR), missing at random (MAR), or missing not at random (MNAR). In instances where the probability of missingness is independent of all observed variables, data are said to be MCAR. Conversely, in instances where the probability of missingness is directly related to the measurement itself, data are said to be MNAR. Finally, data are said to be MAR when the probability of missingness is independent of the measure itself but dependent on some other observed variable.
+The underlying mechanism of missingness can be classified as missing
+completely at random (MCAR), missing at random (MAR), or missing not at
+random (MNAR). In instances where the probability of missingness is
+independent of all observed variables, data are said to be MCAR.
+Conversely, in instances where the probability of missingness is
+directly related to the measurement itself, data are said to be MNAR.
+Finally, data are said to be MAR when the probability of missingness is
+independent of the measure itself but dependent on some other observed
+variable.
 
-Of the three categories, the most desirable is MCAR, as case-wise deletion does not introduce any biases to the analysis procedure. However, MCAR is considered a highly optimistic assumption that rarely holds in practice. As such, a much more reasonable assumption is the MAR assumption, which assumes that the observed values can completely model the probability of missingness. At this point, it is worth noting that missingness mechanisms describe a continuum rather than strict categories. It could be argued that even the MAR assumption is one that rarely holds in practice and that all missing data are MNAR; however, there are instances where the observed values contain sufficient information to model the probability of missingness. In such cases, a proper imputation model that utilizes auxiliary variables, domain expertise, and observed values can make the mechanism of missingness more MAR than MNAR. 
+Of the three categories, the most desirable is MCAR, as case-wise
+deletion does not introduce any biases to the analysis procedure.
+However, MCAR is considered a highly optimistic assumption that rarely
+holds in practice. As such, a much more reasonable assumption is the MAR
+assumption, which assumes that the observed values can completely model
+the probability of missingness. At this point, it is worth noting that
+missingness mechanisms describe a continuum rather than strict
+categories. It could be argued that even the MAR assumption is one that
+rarely holds in practice and that all missing data are MNAR; however,
+there are instances where the observed values contain sufficient
+information to model the probability of missingness. In such cases, a
+proper imputation model that utilizes auxiliary variables, domain
+expertise, and observed values can make the mechanism of missingness
+more MAR than MNAR.
 
-## Code 
+## Code
 
-Please see our publicly available GitHub [repository](https://github.com/ieb2/jackknife_var_est.git) for the R code associated with the simulation, data manipulation, and visualization.
+Please see our publicly available GitHub
+[repository](https://github.com/ieb2/jackknife_var_est.git) for the R
+code associated with the simulation, data manipulation, and
+visualization.
