@@ -582,7 +582,7 @@ All methods produced conservative confidence intervals that covered above the no
 ```{r}
 reshape2::melt(results[c("jackknife_width", "boot_width", "rubin_width", "prop_missing")], id.vars = "prop_missing") %>%
   ggplot(., 
-         aes(x = variable, fill = variable, color = variable, y = value)) + 
+         aes(x = variable, fill = variable, color = variable, y = value, order = variable)) + 
   facet_grid(. ~ prop_missing, labeller = labeller(prop_missing = labels)) + 
   coord_cartesian(ylim = c(0, 6), clip = "on") + 
   ggdist::stat_halfeye(
@@ -626,8 +626,8 @@ reshape2::melt(results[c("jackknife_width", "boot_width", "rubin_width", "prop_m
     y = "C.I, Width",
     title = "Density Plots for Confidence Interval Width"
   ) + 
-  scale_fill_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) + 
-  scale_color_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) 
+  scale_fill_discrete(name = "Method", labels = c("Jackknife", "Rubin's Rules", "Bootstrap")) + 
+  scale_color_discrete(name = "Method", labels = c("Jackknife", "Rubin's Rules", "Bootstrap")) 
 ```
 
 ```{r}
