@@ -37,6 +37,8 @@ knitr::opts_chunk$set(warning=FALSE, fig.align="center", echo = FALSE, message =
 ```
 
 ```{r}
+group.colors <- c( "Jackknife" = "#333BFF", "Bootstrap" = "#CC6600", "Rubin's Rules" ="#9633FF")
+
 labels <- c("10" = "10% Missing", "30" = "30% Missing", "50" = "50% Missing")
 
 # Data management
@@ -516,11 +518,11 @@ reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "poin
   ) +
   coord_cartesian(ylim = c(-1.7, 1.7), clip = "on") + 
   theme(
-  axis.title.x = element_text(size = 16),
-  axis.text.x = element_text(size = 14),
-  axis.title.y = element_text(size = 16), 
-  axis.text.y = element_text(size = 14), 
-  axis.ticks.y = element_text(size = 14)) + 
+    axis.title.x = element_text(size = 16),
+    axis.text.x = element_text(size = 14),
+    axis.title.y = element_text(size = 16), 
+    axis.text.y = element_text(size = 14), 
+    axis.ticks.y = element_text(size = 14)) + 
   theme_bw() + 
   theme(axis.title.x = element_blank(), 
         axis.ticks.x = element_blank(), 
@@ -535,9 +537,10 @@ reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "poin
     y = latex2exp::TeX("$\\widehat{\\beta_1} - \\beta_1"), 
     title = "Density Plots for Point Estimate Bias"
   ) + 
-  scale_fill_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) + 
-  scale_color_discrete(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap")) + 
+  scale_fill_manual(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap"), values = c("#F8766D", "#00BA38", "#619CFF")) +                                                                                                
+  scale_color_manual(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap"), values = c("#F8766D", "#00BA38", "#619CFF")) +    
   geom_hline(yintercept = 0, linetype="dashed", color = "red") 
+
 ```
 
 At lower levels of missingness, the point estimation performance of the
@@ -623,11 +626,10 @@ reshape2::melt(results[c("jackknife_width", "boot_width", "rubin_width", "prop_m
           size = 14), 
         plot.title = element_text(size = 20)) + 
   labs(
-    y = "C.I, Width",
+    y = "C.I. Width",
     title = "Density Plots for Confidence Interval Width"
-  ) + 
-  scale_fill_discrete(name = "Method", labels = c("Jackknife", "Rubin's Rules", "Bootstrap")) + 
-  scale_color_discrete(name = "Method", labels = c("Jackknife", "Rubin's Rules", "Bootstrap")) 
+  ) + scale_fill_manual(name = "Method", labels = c("Jackknife", "Rubin's Rules", "Bootstrap"), values = c( "#00BA38", "#F8766D", "#619CFF")) + 
+  scale_color_manual(name = "Method", labels = c("Jackknife", "Rubin's Rules", "Bootstrap"), values = c( "#00BA38", "#F8766D", "#619CFF"))
 ```
 
 ```{r}
