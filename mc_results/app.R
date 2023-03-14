@@ -25,6 +25,8 @@ ui <- dashboardPage(
     )
 )
 
+combined_shiny_data.csv
+
 server <- function(input, output) {
     
     # Data Creation
@@ -32,6 +34,9 @@ server <- function(input, output) {
         library(RCurl)
         x <- getURL("https://raw.githubusercontent.com/ieb2/ENAR_2023/main/combined_results_final.csv")
         results <- read.csv(text = x)
+        
+        q <- getURL("https://raw.githubusercontent.com/ieb2/ENAR_2023/main/combined_shiny_data.csv")
+        combined_shiny_data <- read.csv(text = q)
     
     duplicated_names <- duplicated(colnames(results))
     
