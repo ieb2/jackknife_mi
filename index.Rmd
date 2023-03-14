@@ -509,7 +509,7 @@ estimates, confidence intervals, and computational expense.
 
 All analyses were conducted using R 4.2.2 (Innocent and Trusting).
 
-# Results {.tabset .tabset-fade .tabset-pills}
+# Results ([Shiny](https://mi-var-est.shinyapps.io/mc_results/)) {.tabset .tabset-fade .tabset-pills} 
 
 Per the Methods section, the performance of the proposed jackknife
 estimator was compared to two leading methods in the literature, Rubin's
@@ -517,7 +517,7 @@ rules following multiple imputation and bootstrap resampling prior to
 multiple imputation. The methods were compared concerning the coverage
 probabilities they generated, the widths of their respective confidence
 intervals, their computational expense, and the bias of their point
-estimators. Please see our [Shiny]( https://mi-var-est.shinyapps.io/mc_results/) app for an alternative presentation of the results. 
+estimators. 
 
 ## Point Estimation
 
