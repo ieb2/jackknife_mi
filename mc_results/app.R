@@ -2,6 +2,49 @@
 library(shiny)
 library(shinydashboard)
 library(tidyverse)
+library(RCurl)
+
+# Data Creation
+{
+  labels <- c("10" = "10% Missing", "30" = "30% Missing", "50" = "50% Missing")
+  x <- getURL("https://raw.githubusercontent.com/ieb2/ENAR_2023/main/combined_results_final.csv")
+  results <- read.csv(text = x)
+  
+  q <- getURL("https://raw.githubusercontent.com/ieb2/ENAR_2023/main/combined_shiny_data.csv")
+  combined_shiny_data <- read.csv(text = q)
+  
+  duplicated_names <- duplicated(colnames(results))
+  
+  results <- results[!duplicated_names]
+  
+  rubins <- results %>%
+    select(.,contains("rub") | prop_missing) %>%
+    mutate(type = "Rubin") %>%
+    rename(point_estimate = point_estimate_rub, 
+           LB = LB_rub, 
+           UB = UB_rub, 
+           width = rubin_width, 
+           prop_missing = prop_missing)
+  
+  boots <- results %>%
+    select(.,contains("boot") | prop_missing) %>%
+    mutate(type = "Bootstrap") %>%
+    rename(point_estimate = point_estimate_boot, 
+           LB = LB_boot, 
+           UB = UB_boot, 
+           width = boot_width, 
+           prop_missing = prop_missing)
+  
+  jackk <- results %>%
+    select(.,-contains(c("boot", "rub")) | prop_missing) %>%
+    mutate(type = "Jackknife") %>%
+    rename(width = jackknife_width, 
+           point_estimate = point_estimate_jackknife, 
+           prop_missing = prop_missing)
+  
+  combined_shiny_data <- bind_rows(rubins, boots, jackk) 
+  
+  combined_shiny_data$true_var <- rep(2, nrow(combined_shiny_data))}
 
 
 ui <- dashboardPage(
@@ -25,58 +68,13 @@ ui <- dashboardPage(
     )
 )
 
-combined_shiny_data.csv
-
 server <- function(input, output) {
-    
-    # Data Creation
-    {
-        library(RCurl)
-        x <- getURL("https://raw.githubusercontent.com/ieb2/ENAR_2023/main/combined_results_final.csv")
-        results <- read.csv(text = x)
-        
-        q <- getURL("https://raw.githubusercontent.com/ieb2/ENAR_2023/main/combined_shiny_data.csv")
-        combined_shiny_data <- read.csv(text = q)
-    
-    duplicated_names <- duplicated(colnames(results))
-    
-    results <- results[!duplicated_names]
-    
-    rubins <- results %>%
-        select(.,contains("rub") | prop_missing) %>%
-        mutate(type = "Rubin") %>%
-        rename(point_estimate = point_estimate_rub, 
-               LB = LB_rub, 
-               UB = UB_rub, 
-               width = rubin_width, 
-               prop_missing = prop_missing)
-    
-    boots <- results %>%
-        select(.,contains("boot") | prop_missing) %>%
-        mutate(type = "Bootstrap") %>%
-        rename(point_estimate = point_estimate_boot, 
-               LB = LB_boot, 
-               UB = UB_boot, 
-               width = boot_width, 
-               prop_missing = prop_missing)
-    
-    jackk <- results %>%
-        select(.,-contains(c("boot", "rub")) | prop_missing) %>%
-        mutate(type = "Jackknife") %>%
-        rename(width = jackknife_width, 
-               point_estimate = point_estimate_jackknife, 
-               prop_missing = prop_missing)
-    
-    combined_shiny_data <- bind_rows(rubins, boots, jackk) 
-    
-    combined_shiny_data$true_var <- rep(2, nrow(combined_shiny_data))}
     
     output$basic_density <- renderPlot({
         reshape2::melt(results[c("point_estimate_rub", "point_estimate_jackknife", "point_estimate_boot", "prop_missing")], id.vars = "prop_missing") %>%
             filter(prop_missing == input$prop_missing) %>%
             ggplot(., 
                    aes(x = variable, fill = variable, color = variable, y = value-2)) + 
-            facet_grid(. ~ prop_missing, labeller = labeller(prop_missing = labels)) + 
             ggdist::stat_halfeye(
                 alpha = 1,
                 adjust = .5, 
@@ -207,6 +205,3 @@ server <- function(input, output) {
 }
 
 shinyApp(ui, server)
-
-library(rsconnect)
-deployApp()

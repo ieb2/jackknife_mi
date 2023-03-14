@@ -1,0 +1,13 @@
+name: mc_results
+title: mc_results
+username:
+account: mi-var-est
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 8562160
+bundleId: 6955728
+url: https://mi-var-est.shinyapps.io/mc_results/
+when: 1678787019.30693
+lastSyncTime: 1678787019.30694
+asMultiple: FALSE
+asStatic: FALSE
