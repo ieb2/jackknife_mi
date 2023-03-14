@@ -76,6 +76,8 @@ benchmark_detailed_releveled$method <- factor(benchmark_detailed_releveled$metho
 results <- 
   read_rds("combined_results_final.rds")
 
+write.csv(results, "combined_results_final.csv")
+
 duplicated_names <- duplicated(colnames(results))
 
 results <- results[!duplicated_names]
@@ -106,6 +108,8 @@ jackk <- results %>%
           prop_missing = prop_missing)
 
 combined_shiny_data <- bind_rows(rubins, boots, jackk) 
+
+write.csv(combined_shiny_data, "combined_shiny_data.csv")
 
 combined_shiny_data$true_var <- rep(2, nrow(combined_shiny_data))
 ```
