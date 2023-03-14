@@ -28,8 +28,10 @@ ui <- dashboardPage(
 server <- function(input, output) {
     
     # Data Creation
-    {results <- 
-        read_rds("combined_results_final.rds")
+    {
+        library(RCurl)
+        x <- getURL("https://raw.githubusercontent.com/ieb2/ENAR_2023/main/combined_results_final.csv")
+        results <- read.csv(text = x)
     
     duplicated_names <- duplicated(colnames(results))
     
