@@ -37,8 +37,6 @@ knitr::opts_chunk$set(warning=FALSE, fig.align="center", echo = FALSE, message =
 ```
 
 ```{r}
-group.colors <- c( "Jackknife" = "#333BFF", "Bootstrap" = "#CC6600", "Rubin's Rules" ="#9633FF")
-
 labels <- c("10" = "10% Missing", "30" = "30% Missing", "50" = "50% Missing")
 
 # Data management
@@ -81,6 +79,35 @@ results <-
 duplicated_names <- duplicated(colnames(results))
 
 results <- results[!duplicated_names]
+
+rubins <- results %>%
+  select(.,contains("rub") | prop_missing) %>%
+  mutate(type = "Rubin") %>%
+  rename(point_estimate = point_estimate_rub, 
+         LB = LB_rub, 
+         UB = UB_rub, 
+         width = rubin_width, 
+         prop_missing = prop_missing)
+
+boots <- results %>%
+  select(.,contains("boot") | prop_missing) %>%
+  mutate(type = "Bootstrap") %>%
+  rename(point_estimate = point_estimate_boot, 
+         LB = LB_boot, 
+         UB = UB_boot, 
+         width = boot_width, 
+         prop_missing = prop_missing)
+
+jackk <- results %>%
+  select(.,-contains(c("boot", "rub")) | prop_missing) %>%
+  mutate(type = "Jackknife") %>%
+  rename(width = jackknife_width, 
+          point_estimate = point_estimate_jackknife, 
+          prop_missing = prop_missing)
+
+combined_shiny_data <- bind_rows(rubins, boots, jackk) 
+
+combined_shiny_data$true_var <- rep(2, nrow(combined_shiny_data))
 ```
 
 # Background
