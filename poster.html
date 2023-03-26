@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+
+<title>Robust Multiple Imputation Estimation Under Uncongeniality</title>
+
+
+
+
+
+
+
+<!--
+Font-awesome icons ie github or twitter
+-->
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/brands.css" integrity="sha384-n9+6/aSqa9lBidZMRCQHTHKJscPq6NW4pCQBiMmHdUCvPN8ZOg2zJJTkC7WIezWv" crossorigin="anonymous">
+
+<!--
+Google fonts api stuff
+-->
+<link href='https://fonts.googleapis.com/css?family=Georgia' rel='stylesheet'>
+<link href='https://fonts.googleapis.com/css?family=Rasa' rel='stylesheet'>
+
+<!--
+Here are the required style attributes for css to make this poster work :)
+-->
+<style>
+@page {
+size: 36in 48in;
+margin: 0;
+padding: 0;
+}
+body {
+margin: 0px;
+padding: 0px;
+width: 36in;
+height: 48in;
+text-align: justify;
+font-size: 45px;
+line-height: 1.05;
+}
+/* RMarkdown Class Styles */
+/* center align leaflet map,
+from https://stackoverflow.com/questions/52112119/center-leaflet-in-a-rmarkdown-document */
+.html-widget {
+margin: auto;
+position: sticky;
+margin-top: 2cm;
+margin-bottom: 2cm;
+}
+.leaflet.html-widget.html-widget-static-bound.leaflet-container.leaflet-touch.leaflet-fade-anim.leaflet-grab.leaflet-touch-drag.leaflet-touch-zoom {
+position: sticky;
+width: 100%;
+}
+pre.sourceCode.r {
+background-color: #dddddd40;
+border-radius: 4mm;
+padding: 4mm;
+width: 75%;
+margin: auto;
+margin-top: 1em;
+margin-bottom: 1em;
+/* align-items: center; */
+}
+code.sourceCode.r{
+background-color: transparent;
+font-size: 20pt;
+border-radius: 2mm;
+}
+code {
+font-size: 25pt;
+font-family: monospace;
+background-color: #8DC8E824;
+color: #009CDE;
+padding: 1.2mm;
+line-height: 1;
+border-radius: 2mm;
+}
+caption {
+margin-bottom: 10px;
+font-size: 20pt;
+font-style: italic;
+}
+
+tbody tr:nth-child(odd) {
+    background-color: #8DC8E820;
+}
+.table>thead>tr>th, .table>tbody>tr>th, .table>tfoot>tr>th, .table>thead>tr>td, .table>tbody>tr>td, .table>tfoot>tr>td{
+  border-spacing: 0;
+  font-size: 40%;
+  border-style: none;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-right: 1em;
+  padding-left: 1em;
+  line-height: 1em;
+}
+table {
+  margin: auto;
+}
+th {
+  padding-left: 5mm;
+  padding-right: 5mm;
+}
+.caption {
+font-size: 20pt;
+font-style: italic;
+padding-top: 0;
+}
+.references {
+font-size: 20px;
+line-height: 90%;
+}
+/* Create three unequal columns that floats next to each other */
+.column {
+float: left;
+padding: 0px;
+}
+.outer {
+width: 36in;
+height: calc(48in *  (1 - 0.2 - 0.1 - 0.01) );
+-webkit-column-count: 3; /* Chrome, Safari, Opera */
+-moz-column-count: 3; /* Firefox */
+column-count: 3;
+-webkit-column-fill: auto;
+-moz-column-fill: auto;
+column-fill: auto;
+column-gap: 0;
+padding-left: 0cm;
+padding-right: 0cm;
+/* -webkit-column-rule-width: 50%;
+-moz-column-rule-width: 50%;
+column-rule-width: 50%; */
+-webkit-column-rule-style: none;
+-moz-column-rule-style: none;
+column-rule-style: none;
+-webkit-column-rule-color: black;
+-moz-column-rule-color: black;
+column-rule-color: black;
+background-color: #ffffff;
+font-family: Rasa;
+margin-top: calc(48in *  0.2 );
+padding-top: 1em;
+padding-bottom: 1em;
+}
+span.citation {
+  color: #8DC8E8;
+  font-weight: bold;
+}
+a {
+text-decoration: none;
+color: #8DC8E8;
+}
+#title {
+font-size: 125pt;
+text-align: left;
+margin: 0;
+line-height: 98%;
+border-bottom: 0;
+font-weight: normal;
+background: 0;
+}
+#author {
+color: #009CDE;
+margin: 0;
+line-height: 85%;
+font-size: 1.17em;
+}
+#affiliation {
+padding-top: 0.1em;
+color: ;
+font-style: italic;
+font-size: 25px;
+margin: 0;
+}
+sup {
+color: #97C800;
+}
+.affiliation sup {
+font-size: 20px;
+}
+.author {
+text-align: left;
+}
+.author sup {
+font-size: 30px;
+}
+.author_extra {
+color: #8DC8E8;
+margin: 0;
+line-height: 85%;
+font-size: 35px;
+text-align: left;
+}
+.outer h1, h2, h3, h4, h5, h6 {
+text-align: center;
+margin: 0;
+font-weight: bold;
+}
+.section h1 {
+  text-align:center;
+  padding-bottom:5px;
+  background:
+    linear-gradient(
+      to left,
+      #ffffff 1%,
+      #ffffff 20%,
+      #009CDE75 33%,
+      #009CDE 50%,
+      #009CDE75 66%,
+      #ffffff 80%,
+      #ffffff 99%
+    )
+    left
+    bottom
+    #ffffff
+    no-repeat;
+  background-size:100% 5px ;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+.outer h2 {
+text-align: center;
+}
+.outer p, .level2 {
+color: #000000;
+}
+.outer ol {
+padding-left: 8%;
+padding-right: 8%;
+text-align: left;
+}
+.main {
+width: 36in;
+height: calc(48in * 0.2);
+position: absolute;
+background-color: #009CDE;
+color: #ffffff90;
+font-family: Georgia;
+background-image: linear-gradient(#009CDE 50%,#8DC8E8);
+}
+.main strong {
+color: #ffffff;
+}
+.main strong > sup {
+color: #ffffff;
+}
+.main sup {
+color: #ffffff90;
+}
+#main-img-left {
+width: 10%;
+left: 0.5in;
+bottom: 0.2in;
+position: absolute;
+}
+#main-img-center {
+width: 10%;
+left: calc(36in * 0.45);
+bottom: 0.5in;
+position: absolute;
+}
+#main-img-right {
+width: 10%;
+right: 0.5in;
+bottom: 0.2in;
+position: absolute;
+}
+.main p {
+font-size: 150px;
+font-family: Georgia;
+text-align: center;
+margin: 0;
+position: absolute;
+top: 50%;
+-ms-transform: translateY(-50%);
+transform: translateY(-50%);
+margin-left: 1em;
+}
+.fab {
+color: #00000030;
+font-size: 25px;
+}
+.twitter, i {
+color: #00000030;
+font-size: 35px;
+text-decoration: none;
+}
+a.email {
+text-decoration: none;
+color: #00000030;
+font-size: 35px;
+}
+.envelope {
+color: #00000030;
+font-size: 5px;
+text-decoration: none;
+}
+.poster_wrap {
+width: 36in;
+height: 48in;
+padding: 0cm;
+}
+.main_bottom {
+width: 36in;
+height: calc(48in * 0.1);
+margin-top: calc(48in * (1 - 0.1));
+position: absolute;
+background-color: #009CDE;
+background-image: linear-gradient(#8DC8E8 10%, #009CDE);
+}
+.section {
+  padding-left: 10mm;
+  padding-right: 10mm;
+}
+span > #tab:mytable {
+  font-weight: bold;
+}
+.orcid img {
+  width: 3%;
+}
+.emphasis {
+  background-color: #008080;
+  color: #ffffff;
+  border: solid #0b2045 3mm;
+  margin: 1em;
+  padding-left: 0;
+  padding-right: 0;
+}
+.emphasis h1 {
+  font-weight: bold;
+  background: none;
+  background-color: #0b2045;
+  padding-bottom: 5mm;
+  padding-top: 1mm;
+  margin-top: -1mm;
+  margin-right: -1mm;
+  margin-left: -1mm;
+}
+.emphasis blockquote {
+  border: 0;
+}
+.emphasis ol {
+  padding: 0;
+  padding-left: 8%;
+  font-size: 100%;
+  font-weight: bold;
+}
+.emphasis p {
+  color: #ffffff;
+}
+</style>
+</head>
+<body>
+
+
+<div class="poster_wrap">
+
+<div class="column outer">
+<div class="section">
+<h1 id="title"><strong>Robust Multiple Imputation Estimation Under Uncongeniality</strong></h1><br>
+<h3 id="author" class="author">
+
+<strong>Ihsan E. Buker</strong><sup> 1</sup><br>
+
+<a class='envelope'><i class="fas fa-envelope"></i></a> <a href="mailto:ieb2@students.uwf.edu" class="email">ieb2@students.uwf.edu</a> <br>
+  </h3>
+
+<h5 id="author_extra", class="author_extra">
+ Samantha R. Seals<sup>1</sup>
+ <sup></sup>
+</h5>
+
+
+</div>
+
+<style>
+#main-img-left {
+ width: 25%;
+}
+#main-img-right {
+ width: 30%;
+}
+</style>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>Multiple imputation is one of the most commonly utilized approaches to provide valid inferences with missing observations. When the imputation model and the analysis model make different assumptions about the data, uncongeniality occurs, which can lead to invalid inferences from MI estimators.</p>
+<p><strong>We propose using jackknife subsampling prior to multiple imputation as a means to mitigate issues that may arise due to uncongeniality in smaller datasets.</strong></p>
+</div>
+<div id="overview" class="section level1">
+<h1>Overview</h1>
+<p><img src="summary_of_estimator.jpg" width="800px" height="800px" style="display: block; margin: auto;" /></p>
+<p style="color:white;">
+White textalfkdjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjsldfsakkkkkkkkkkkkjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjajjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjWhite textalfkdjjjjjjjjjjjjjjjjjjjjjjjjjWhite textalfkdjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjsldfsakkkkkkkkkkkkjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjWhite textalfkdjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjsldfsakkkkkkkkkkkkjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjajjjjWhite textalfkdjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjsldfsakkkkkkkkkkkkjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjajjjjWhite textalfkdjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjsldfsakkkkkkkkkkkkjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjajjjjWhite textalfkdjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjsldfsakkkkkkkkkkkkjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjajjjjjjjjjjjjjjjjajjjjWhite textalfkdjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjsldfsakkkkkkkkkkkkjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjajjjjWhite textalfkdjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjsldfsakkkkkkkkkkkkjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjajjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjsldfsakkkkkkkkkkkkjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjajjjj
+</p>
+</div>
+<div id="methods" class="section level1">
+<h1>Methods</h1>
+<p>Three covariates were simulated from the following normal distribution.
+<span class="math display">\[
+\begin{bmatrix} V_1 \\V_2 \\ V_3 \end{bmatrix} \sim N\left(\begin{bmatrix} 1\\ 1 \\ 1 \end{bmatrix}, \begin{bmatrix} 1 &amp; 0.5 &amp; 0.5 \\
+0.5 &amp; 1 &amp; 0.5 \\
+0.5 &amp; 0.5 &amp; 1
+\end{bmatrix}\right)
+\]</span></p>
+<p>And the outcome variable <span class="math inline">\(Y\)</span> was defined in the following manner.</p>
+<p><span class="math display">\[
+Y = \sum^3_{i=1} {V_i \cdot \beta_{V_i}} + \epsilon \sim N(\mu = 0, \sigma \propto V_2)
+\]</span>
+Where</p>
+<p><span class="math display">\[
+\beta_{V_1} = 2 ; \  \beta_{V_2} = 5 ; \ \beta_{V_3} = 8
+\]</span>
+The analysis model of interest was:
+<span class="math display">\[
+\widehat{Y} \sim \widehat{\beta}_{V_1} + \widehat{\beta}_{V_2} + \widehat{\beta}_{V_3}
+\]</span></p>
+<p>30,000 datasets were simulated with sample size <span class="math inline">\(n = 50\)</span>. Based on dataset characteristics, the ideal number of subsamples/resamples was found to be <span class="math inline">\(j = 200\)</span>, and the number of imputations <span class="math inline">\(m=10\)</span> when the method of inference was Rubin’s Rules, and <span class="math inline">\(m=2\)</span> otherwise. Lastly, the goal of the analysis was to estimate <span class="math inline">\(\beta_{V_1}\)</span>.</p>
+</div>
+<div id="results" class="section level1">
+<h1>Results</h1>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:unnamed-chunk-3"></span>
+<img src="poster_files/figure-html/unnamed-chunk-3-1.png" alt="Jackknife obtained least bias across all levels of missingness." width="100%" />
+<p class="caption">
+Figure 1: Jackknife obtained least bias across all levels of missingness.
+</p>
+</div>
+<p>Across all levels of missingness, the jackknife estimator obtained the least biased estimates of <span class="math inline">\(\beta_{V_1}\)</span>. Nearly all methods were unbiased at lower levels of missingness; however, at higher levels of missingness, only the jackknife estimator was unbiased. Lastly, we see that the jackknife estimates maintained their consistency even at higher levels of missingness, where other appraoches began producing highly varied estimates of <span class="math inline">\(\beta_{V_1}\)</span>.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:unnamed-chunk-4"></span>
+<img src="poster_files/figure-html/unnamed-chunk-4-1.png" alt="Jackknife obtained narrowest C.I. width while attaining nominal coverage." width="100%" />
+<p class="caption">
+Figure 2: Jackknife obtained narrowest C.I. width while attaining nominal coverage.
+</p>
+</div>
+<p>The jackknife estimator provided the narrowest confidence intervals across all levels of missingness while still attaining near-nominal coverage.</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:unnamed-chunk-5"></span>
+<img src="poster_files/figure-html/unnamed-chunk-5-1.png" alt="The methods examined tended to generate conservative confidence intervals, which may be improved by alternative parameters." width="100%" />
+<p class="caption">
+Figure 3: The methods examined tended to generate conservative confidence intervals, which may be improved by alternative parameters.
+</p>
+</div>
+<p>All approaches had a tendency to produce conservative confidence intervals, which might be improved by changing the number of imputations, subsamples/resamples, etc..</p>
+<table>
+<caption>
+<span id="tab:unnamed-chunk-6">Table 1: </span>Descriptive statistics for computational time (seconds.)
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Method
+</th>
+<th style="text-align:center;">
+Mean
+</th>
+<th style="text-align:center;">
+SD
+</th>
+<th style="text-align:center;">
+Range
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Rubin’s Rules
+</td>
+<td style="text-align:center;">
+318.1
+</td>
+<td style="text-align:center;">
+8.7
+</td>
+<td style="text-align:center;">
+36.9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Jackknife
+</td>
+<td style="text-align:center;">
+867.6
+</td>
+<td style="text-align:center;">
+16.1
+</td>
+<td style="text-align:center;">
+83.5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Bootstrap
+</td>
+<td style="text-align:center;">
+7287.6
+</td>
+<td style="text-align:center;">
+144.3
+</td>
+<td style="text-align:center;">
+591.6
+</td>
+</tr>
+</tbody>
+</table>
+<p>Unsuprisingly, Rubin’s Rules was the fastest approach, which was nearly two and a half times faster than the jackknife approach and 23 times faster than the bootstrap approach. In contrast, the jackknife approach was nearly eight and a half times faster than the bootstrap approach.</p>
+</div>
+<div id="future-direction" class="section level1">
+<h1>Future Direction</h1>
+<p>The performance of the proposed approach will be evaluated under situations frequently encountered in real-world datasets, such as missing covariates, data types besides continuous, and mechanisms besides missing at random.</p>
+</div>
+
+</div>
+<div class="main">
+<p><strong>Jackknifing is superior</strong> to bootstrapping when working with small multiply imputed datasets under uncongeniality.</p>
+</div>
+<div class="main_bottom">
+<img id="main-img-left" src=DMS_PrimaryHorizontal_Process.png>
+<img id="main-img-center" src=frame.png>
+<img id="main-img-right" src=>
+</div>
+</div>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+var script = document.createElement("script");
+script.type = "text/javascript";
+var src = "true";
+if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+if (location.protocol !== "file:" && /^https?:/.test(src))
+src = src.replace(/^https?:/, '');
+script.src = src;
+document.getElementsByTagName("head")[0].appendChild(script);
+})();
+</script>
+
+
+</body>
+</html>

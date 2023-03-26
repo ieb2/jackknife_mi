@@ -1,5 +1,5 @@
 ---
-title: "Jackknife Variance Estimator for Datasets Containing Multiply Imputed Outcome Variables Under Uncongeniality: A Monte Carlo Simulation Study"
+title: "Robust Multiple Imputation Estimation Under Uncongeniality"
 author:
 - affiliation: "Department of Mathematics and Statistics, University of West Florida"
   name: 'Ihsan E. Buker & Samantha R. Seals'

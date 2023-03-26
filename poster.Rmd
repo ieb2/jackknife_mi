@@ -1,0 +1,213 @@
+---
+main_topsize: 0.2 #percent coverage of the poster
+main_bottomsize: 0.1
+#ESSENTIALS
+title: '**Robust Multiple Imputation Estimation Under Uncongeniality**'
+author:
+  - name: '**Ihsan E. Buker**'
+    affil: 1
+    main: true
+    email: ieb2@students.uwf.edu
+  - name: Samantha R. Seals
+    affil: 1
+    main: false
+    address: Department of Mathematics and Statistics, University of West Florida
+  - num: 1
+main_findings:
+  - "**Jackknifing is superior** to bootstrapping when working with small multiply imputed datasets under uncongeniality. "
+logoleft_name: DMS_PrimaryHorizontal_Process.png
+logocenter_name: frame.png
+output: 
+  posterdown::posterdown_betterport:
+    self_contained: FALSE
+    pandoc_args: --mathjax
+    number_sections: false
+link-citations: TRUE
+main_fontfamily: "Georgia"
+primary_colour: "#009CDE"
+secondary_colour: "#8DC8E8"
+accent_colour: "#97C800"
+---
+<style>
+#main-img-left {
+ width: 25%;
+}
+#main-img-right {
+ width: 30%;
+}
+</style>
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      tidy = FALSE,
+                      message = FALSE,
+                      fig.align = 'center',
+                      out.width = "100%")
+options(knitr.table.format = "html") 
+
+knitr::write_bib(c('posterdown', 'rmarkdown','pagedown'), 'packages.bib')
+
+library(ggplot2)
+library(tidyverse)
+library(ggstatsplot)
+library(ggridges)
+
+labels <- c("10" = "10% Missing", "30" = "30% Missing", "50" = "50% Missing")
+
+benchmark_detailed <- read.csv("benchmark_detailed.csv") %>%
+  select(-X) %>%
+  mutate(method = as.factor(expr), 
+         time = time/1e6) %>%
+  select(time, method) 
+
+clean_jackk_times <- benchmark_detailed %>%
+  filter(method == "Jackknife") %>%
+  mutate(zTime = scale(time)) %>%
+  filter(between(zTime, -2.5,2.5)) %>%
+  select(time, method)
+
+clean_boot_times <- benchmark_detailed %>%
+  filter(method == "Bootstrap") %>%
+  mutate(zTime = scale(time)) %>%
+  filter(between(zTime, -2.5,2.5)) %>%
+  select(time, method)
+
+clean_rubin_times <- benchmark_detailed %>%
+  filter(method == "Rubin's Rules") %>%
+  mutate(zTime = scale(time)) %>%
+  filter(between(zTime, -2.5,2.5)) %>%
+  select(time, method)
+
+benchmark_detailed_releveled <- rbind(clean_boot_times, clean_jackk_times, clean_rubin_times)
+
+benchmark_detailed_releveled$method <- factor(benchmark_detailed_releveled$method, levels = c("Rubin's Rules", "Jackknife", "Bootstrap"))
+
+results <- read_rds("combined_results_final.rds")
+
+combined_shiny_data <- read.csv("combined_shiny_data.csv") %>%
+  dplyr::select(-c(true_var, X)) %>%
+  mutate(true_var = rep(2, 90000))
+```
+
+# Introduction
+
+Multiple imputation is one of the most commonly utilized approaches to provide valid inferences with missing observations. When the imputation model and the analysis model make different assumptions about the data, uncongeniality occurs, which can lead to invalid inferences from MI estimators. 
+
+**We propose using jackknife subsampling prior to multiple imputation as a means to mitigate issues that may arise due to uncongeniality in smaller datasets.**
+
+# Overview 
+
+```{r, out.width = "800px", out.height= "800px"}
+knitr::include_graphics("summary_of_estimator.jpg")
+```
+
+<p style="color:white;">White textalfkdjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjsldfsakkkkkkkkkkkkjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjajjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjWhite textalfkdjjjjjjjjjjjjjjjjjjjjjjjjjWhite textalfkdjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjsldfsakkkkkkkkkkkkjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjWhite textalfkdjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjsldfsakkkkkkkkkkkkjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjajjjjWhite textalfkdjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjsldfsakkkkkkkkkkkkjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjajjjjWhite textalfkdjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjsldfsakkkkkkkkkkkkjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjajjjjWhite textalfkdjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjsldfsakkkkkkkkkkkkjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjajjjjjjjjjjjjjjjjajjjjWhite textalfkdjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjsldfsakkkkkkkkkkkkjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjajjjjWhite textalfkdjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjsldfsakkkkkkkkkkkkjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjajjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjsldfsakkkkkkkkkkkkjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjajjjj</p>
+
+# Methods
+
+Three covariates were simulated from the following normal distribution. 
+$$
+\begin{bmatrix} V_1 \\V_2 \\ V_3 \end{bmatrix} \sim N\left(\begin{bmatrix} 1\\ 1 \\ 1 \end{bmatrix}, \begin{bmatrix} 1 & 0.5 & 0.5 \\
+0.5 & 1 & 0.5 \\
+0.5 & 0.5 & 1
+\end{bmatrix}\right)
+$$ 
+
+And the outcome variable $Y$ was defined in the following manner. 
+
+$$
+Y = \sum^3_{i=1} {V_i \cdot \beta_{V_i}} + \epsilon \sim N(\mu = 0, \sigma \propto V_2)
+$$ 
+Where
+
+$$
+\beta_{V_1} = 2 ; \  \beta_{V_2} = 5 ; \ \beta_{V_3} = 8
+$$ 
+The analysis model of interest was: 
+$$
+\widehat{Y} \sim \widehat{\beta}_{V_1} + \widehat{\beta}_{V_2} + \widehat{\beta}_{V_3} 
+$$ 
+
+
+30,000 datasets were simulated with sample size $n = 50$. Based on dataset characteristics, the ideal number of subsamples/resamples was found to be $j = 200$, and the number of imputations $m=10$ when the method of inference was Rubin's Rules, and $m=2$ otherwise. Lastly, the goal of the analysis was to estimate $\beta_{V_1}$. 
+
+# Results
+
+```{r, fig.cap="Jackknife obtained least bias across all levels of missingness."}
+combined_shiny_data %>%
+  ggplot(aes(y = point_estimate-2, x = type, fill = type)) + 
+  geom_violin() + 
+  labs(
+    y = "Bias", 
+    x = ""
+  ) + geom_hline(yintercept = 0, linetype="dashed", color = "red") + 
+  facet_grid(. ~ prop_missing, labeller = labeller(prop_missing = labels)) +
+  theme_bw() + 
+  theme(legend.title = element_blank(), 
+        axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank()) + 
+  scale_fill_manual(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap"), values = c("#F8766D", "#00BA38", "#619CFF")) +                                                                 
+  scale_color_manual(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap"), values = c("#F8766D", "#00BA38", "#619CFF"))
+```
+
+Across all levels of missingness, the jackknife estimator obtained the least biased estimates of $\beta_{V_1}$. Nearly all methods were unbiased at lower levels of missingness; however, at higher levels of missingness, only the jackknife estimator was unbiased. Lastly, we see that the jackknife estimates maintained their consistency even at higher levels of missingness, where other appraoches began producing highly varied estimates of $\beta_{V_1}$.
+ 
+```{r, fig.cap="Jackknife obtained narrowest C.I. width while attaining nominal coverage."}
+combined_shiny_data %>%
+  ggplot(aes(y = width, x = type, fill = type)) + 
+  geom_violin() + 
+  labs(
+    y = "C.I. Width", 
+    x = "") + 
+  facet_grid(. ~ prop_missing, labeller = labeller(prop_missing = labels)) +
+  theme_bw() + 
+  theme(legend.title = element_blank(), 
+        axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank()) + 
+  scale_fill_manual(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap"), values = c("#F8766D", "#00BA38", "#619CFF")) +                                                                 
+  scale_color_manual(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap"), values = c("#F8766D", "#00BA38", "#619CFF"))
+```
+
+The jackknife estimator provided the narrowest confidence intervals across all levels of missingness while still attaining near-nominal coverage.
+
+```{r fig.cap="The methods examined tended to generate conservative confidence intervals, which may be improved by alternative parameters."}
+combined_shiny_data %>%
+  mutate(covers = ifelse(true_var > LB & true_var < UB, TRUE, FALSE)) %>% 
+  group_by(type, prop_missing) %>%
+  summarise(coverage_probability = {sum(covers)/10000}) %>%
+  ggplot(data = ., aes(x = prop_missing, y = coverage_probability, group = type, color = type)) + 
+  theme_bw()+
+  geom_line() + 
+  geom_point() + 
+  geom_hline(yintercept = 0.95, linetype="dashed", color = "red") + 
+  theme(legend.title = element_blank()) + 
+  scale_fill_manual(name = "Method", labels = c("Bootstrap", "Jackknife", "Rubin's Rules"), values = c("#619CFF", "#00BA38", "#F8766D")) +                                                                 
+scale_color_manual(name = "Method", labels = c("Bootstrap", "Jackknife", "Rubin's Rules"), values = c("#619CFF","#00BA38", "#F8766D")) + 
+  annotate('rect', xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=0.95, alpha=.2, fill='green') + 
+  annotate('text', x = 45, y = 0.948, label = 'Anti-Conservative') + 
+  annotate('text', x = 45, y = 0.952, label = 'Conservative') + 
+   annotate('rect', xmin=-Inf, xmax=Inf, ymin=0.95, ymax=Inf, alpha=.2, fill='blue') + 
+  labs(x = "Proportion of Missingness (%)", 
+       y = "Coverage Probability")
+```
+
+All approaches had a tendency to produce conservative confidence intervals, which might be improved by changing the number of imputations, subsamples/resamples, etc.. 
+
+```{r}
+knitr::kable(benchmark_detailed_releveled %>%
+  group_by(method) %>%
+  summarise("Mean" = round(mean(time),1), 
+            "SD" = round(sd(time),1), 
+            "Range" = round({max(time) - min(time)},1)
+            ) %>%
+  rename("Method" = method), 
+  caption = "Descriptive statistics for computational time (seconds.)", 
+  align = c("l", "c", "c", "c"))
+```
+
+Unsuprisingly, Rubin's Rules was the fastest approach, which was nearly two and a half times faster than the jackknife approach and 23 times faster than the bootstrap approach. In contrast, the jackknife approach was nearly eight and a half times faster than the bootstrap approach. 
+
+# Future Direction
+
+The performance of the proposed approach will be evaluated under situations frequently encountered in real-world datasets, such as missing covariates, data types besides continuous, and mechanisms besides missing at random. 

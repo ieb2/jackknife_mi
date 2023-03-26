@@ -5,9 +5,10 @@ account: mi-var-est
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 8562160
-bundleId: 6955728
+bundleId: 6972995
 url: https://mi-var-est.shinyapps.io/mc_results/
-when: 1678787019.30693
-lastSyncTime: 1678787019.30694
+when: 1679083564.07223
+lastSyncTime: 1679083564.07225
 asMultiple: FALSE
 asStatic: FALSE
+ignoredFiles: .RData

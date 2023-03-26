@@ -46,7 +46,6 @@ library(RCurl)
   
   combined_shiny_data$true_var <- rep(2, nrow(combined_shiny_data))}
 
-
 ui <- dashboardPage(
     
     dashboardHeader(title = "Monte Carlo"),
@@ -56,10 +55,12 @@ ui <- dashboardPage(
                     choices = c(unique(as.numeric(combined_shiny_data$prop_missing)))
         )
     ),
-    dashboardBody(box(plotOutput("basic_density")),
-                  box(plotOutput("zip_plot")), 
+    dashboardBody(box(plotOutput("basic_density"), 
+                  title = h4("Density Plots for Point Estimate Bias")),
+                  box(plotOutput("zip_plot"), 
+                      title = h4("C.I. Coverage Plots for Random Sample of n = 100 ")), 
                   box(DT::dataTableOutput('table')), 
-                  box(title = "Mechanism of Missingness",width = 2, height = 150,background = "blue",
+                  box(title = "Mechanism of Missingness",width = 2, height = 150, background = "blue",
                       "Missing At Random"), 
                   box(title = "Number of Imputations",width = 2, height = 150, background = "light-blue",
                       "m = 10 for Rubin; m = 2 otherwise"), 
@@ -114,8 +115,7 @@ server <- function(input, output) {
                       size = 14), 
                   plot.title = element_text(size = 20)) + 
             labs(
-                y = latex2exp::TeX("$\\widehat{\\beta_1} - \\beta_1"), 
-                title = "Density Plots for Point Estimate Bias"
+                y = latex2exp::TeX("$\\widehat{\\beta_1} - \\beta_1")
             ) + 
             scale_fill_manual(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap"), values = c("#F8766D", "#00BA38", "#619CFF")) +                                                                                                
             scale_color_manual(name = "Method", labels = c("Rubin's Rules", "Jackknife", "Bootstrap"), values = c("#F8766D", "#00BA38", "#619CFF")) +    
@@ -132,10 +132,11 @@ server <- function(input, output) {
             group_by(type) %>%
             summarise("Bias" = round(mean(Bias),3), 
                       "Relative Bias" = round(mean(Bias)/2,3), 
-                      "Coverage Probability" = round(sum(Coverage)/{nrow(.)/3},3)) %>%
+                      "Coverage Probability" = round(sum(Coverage)/{nrow(.)/3},3), 
+                      "C.I. Width" = round(mean(width),3)) %>%
             rename("Type" = type) %>%
             slice(c(3,2,1))
-        DT::datatable(df, options = list(paging = FALSE, searching=FALSE)) %>% 
+        DT::datatable(df, options = list(paging = FALSE, searching=FALSE), rownames = FALSE) %>% 
             DT::formatStyle(1:nrow(df), color = "black")
     })
     
@@ -151,13 +152,14 @@ server <- function(input, output) {
             #coord_flip() + 
             labs(
                 x = "", 
-                y = "C.I."
+                y = "Confidence Interval"
             ) + 
             geom_hline(yintercept = results$true_var) + 
             scale_color_manual(name = NULL, values=c("#999999", "#FF0000")) + 
-            ggtitle("Jackknife Estimator") + 
+            ggtitle("Jackknife") + 
             xlim(c(0,100)) + 
-            ylim(c(-2.5,5))
+            ylim(c(-2.5,5)) + 
+          ggpubr::rremove("y.text")
         
         set.seed(24123)
         boot_p <- results %>%
@@ -170,13 +172,14 @@ server <- function(input, output) {
             #coord_flip() + 
             labs(
                 x = latex2exp::TeX("$i^{th} iteration"), 
-                y = "C.I."
+                y = ""
             ) + 
             geom_hline(yintercept = results$true_var) + 
             scale_color_manual(name = NULL, values=c("#999999", "#FF0000")) + 
-            ggtitle("Bootstrap Estimator") + 
+            ggtitle("Bootstrap") + 
             xlim(c(0,100)) + 
-            ylim(c(-2.5,5))
+            ylim(c(-2.5,5)) + 
+          ggpubr::rremove("y.text")
         
         set.seed(234)
         rubin_p <- results %>%
@@ -189,16 +192,18 @@ server <- function(input, output) {
             #coord_flip() + 
             labs(
                 x = "", 
-                y = "C.I."
+                y = ""
             ) + 
             geom_hline(yintercept = results$true_var) + 
             scale_color_manual(name = NULL, values=c("#999999", "#FF0000")) + 
             ggtitle("Rubin's Rules") + 
             xlim(c(0,100)) + 
-            ylim(c(-2.5,5))
+            ylim(c(-2.5,5)) + 
+          ggpubr::rremove("y.text")
         
         
-        ggpubr::ggarrange(rubin_p, jackk_p, boot_p, nrow = 3, ncol = 1, common.legend = TRUE, legend="bottom")
+        ggpubr::ggarrange(rubin_p, jackk_p, boot_p, nrow = 3, ncol = 1, common.legend = TRUE, legend="bottom") 
+          
         
     })
     
